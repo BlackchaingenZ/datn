@@ -88,4 +88,11 @@ function firstRaw($sql){
     return false;
 }
 
-
+//function bổ sung
+//lấy số dòng câu truy vấn
+function getRows($sql){
+    $statement = query($sql, [], true);
+    if (!empty($statement)){
+        return $statement->rowCount();
+    }
+}

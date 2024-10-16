@@ -162,7 +162,7 @@ function getMsg($msg, $type = 'suc') {
             <?php
         } elseif ($type === 'err') {
             ?>
-            <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/error.png" alt="">
+            <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/error.pngg" alt="">
             <?php
         }
         echo $msg;
@@ -230,10 +230,37 @@ function getLinkAdmin($module, $action='', $param= []) {
     return $url;
 }
 
+// Format Date
+function getDateFormat($strDate, $format) {
+    $dateObject = date_create($strDate);
+    if(!empty($dateObject)) {
+        return date_format($dateObject, $format);
+    }
+    return false;
+}
 
 
+// Check font-awesome
+function isFontIcon($input) {
+    if(strpos($input, '<i class="') != false ) {
+        return true;
+    }
+    return false;
+}
+function getContractStatus($endDate) {
+    $currentDate = new DateTime();
+    $contractEndDate = new DateTime($endDate);
+    $interval = $currentDate->diff($contractEndDate); // Tính khoảng cách giữa 2 ngày
+    $daysLeft = (int)$interval->format('%R%a'); // chuyển khoảng cách ngày thành số ngày
 
-
+    if ($daysLeft < 0) {
+        return "Đã hết hạn";
+    } elseif ($daysLeft > 0 && $daysLeft <= 30) {
+        return "Sắp hết hạn";
+    } else {
+        return "Trong thời hạn";
+    }
+}
 
 
 
