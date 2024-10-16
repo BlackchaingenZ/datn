@@ -151,28 +151,6 @@ function isNumberFloat($number, $range=[]){
 
 }
 
-//Kiểm tra số điện thoại (0123456789 - Bắt đầu bằng số 0, nối tiếp là 9 số)
-function isPhone($phone){
-
-    $checkFirstZero = false;
-
-    if ($phone[0]=='0'){
-        $checkFirstZero = true;
-        $phone = substr($phone, 1);
-    }
-
-    $checkNumberLast = false;
-
-    if (isNumberInt($phone) && strlen($phone)==9){
-        $checkNumberLast = true;
-    }
-
-    if ($checkFirstZero && $checkNumberLast){
-        return true;
-    }
-
-    return false;
-}
 
 //Hàm tạo thông báo
 function getMsg($msg, $type = 'suc') {
@@ -235,13 +213,7 @@ function getUserInfo($user_id){
 }
 
 
-// activeMenuSidebar
-function activeMenuSidebar($module) {
-        if(getBody()['module'] == $module){
-            return true;
-        } 
-   return false;
-}
+
 
 // GetLink
 function getLinkAdmin($module, $action='', $param= []) {
@@ -258,77 +230,12 @@ function getLinkAdmin($module, $action='', $param= []) {
     return $url;
 }
 
-// Format Date
-function getDateFormat($strDate, $format) {
-    $dateObject = date_create($strDate);
-    if(!empty($dateObject)) {
-        return date_format($dateObject, $format);
-    }
-    return false;
-}
-
-// Check font-awesome
-function isFontIcon($input) {
-    if(strpos($input, '<i class="') != false ) {
-        return true;
-    }
-    return false;
-}
-
-// Hàm kiểm tra trang hiện tại có phải trrang admin không
-function isAdmin() {
-    if( !empty($_SERVER['PHP_SELF'])) {
-        $currentFile = $_SERVER['PHP_SELF'];
-        $dirFile = dirname($currentFile);
-        $baseNameDir = basename($dirFile);
-        if(trim($baseNameDir) == 'admin') {
-            return true;
-        }
-    }
-    return false;
-}
-
-function getPath() {
-    $path = '';
-    if(!empty($_SERVER['QUERY_STRING'])) {
-        $path = '?'.trim($_SERVER['QUERY_STRING']);
-    }
-    return $path;
-}
 
 
-function loadErrors($name='404') {
-    $pathErrors = _WEB_PATH_ROOT.'/modules/errors/'.$name.'.php';
-    require_once $pathErrors;
-    die();
-}
 
 
-function generateInvoiceCode($length = 5) {
-    $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    $charactersLength = strlen($characters);
-    $randomString = '';
-    
-    for ($i = 0; $i < $length; $i++) {
-        $randomIndex = random_int(0, $charactersLength - 1);
-        $randomString .= $characters[$randomIndex];
-    }
-    
-    return $randomString;
-}
 
-function getContractStatus($endDate) {
-    $currentDate = new DateTime();
-    $contractEndDate = new DateTime($endDate);
-    $interval = $currentDate->diff($contractEndDate); // Tính khoảng cách giữa 2 ngày
-    $daysLeft = (int)$interval->format('%R%a'); // chuyển khoảng cách ngày thành số ngày
 
-    if ($daysLeft < 0) {
-        return "Đã hết hạn";
-    } elseif ($daysLeft > 0 && $daysLeft <= 30) {
-        return "Sắp hết hạn";
-    } else {
-        return "Trong thời hạn";
-    }
-}
+
+
 

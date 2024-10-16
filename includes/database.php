@@ -88,35 +88,4 @@ function firstRaw($sql){
     return false;
 }
 
-//Lấy dữ liệu theo table, field, condition
-function get($table, $field='*', $condition=''){
-    $sql = 'SELECT '.$field.' FROM '.$table;
-    if (!empty($condition)){
-        $sql.=' WHERE '.$condition;
-    }
 
-    return getRaw($sql);
-}
-
-function first($table, $field='*', $condition=''){
-    $sql = 'SELECT '.$field.' FROM '.$table;
-    if (!empty($condition)){
-        $sql.=' WHERE '.$condition;
-    }
-
-    return firstRaw($sql);
-}
-
-//function bổ sung
-//lấy số dòng câu truy vấn
-function getRows($sql){
-    $statement = query($sql, [], true);
-    if (!empty($statement)){
-        return $statement->rowCount();
-    }
-}
-
-//Lấy id vừa insert
-function insertId(){
-
-}

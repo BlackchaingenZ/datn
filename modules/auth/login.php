@@ -104,5 +104,5 @@ $old = getFlashData('old');
 
 <?php
 
-layout('footer-login', 'admin');
+
 
