@@ -198,7 +198,7 @@ layout('navbar', 'admin', $data);
     <div class="box-content">
         <?php if(!empty($expiringContracts)) { ?>
                 <!--thông báo  trên màn hình -->
-            <div class="alert alert-danger alert-dismissible fade show shadow rounded alert-hover" role="alert">
+            <div class="alert " role="alert">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 Các phòng sắp hết hạn hợp đồng: <strong>
                 <?php foreach($expiringContracts as $item){
@@ -235,7 +235,7 @@ layout('navbar', 'admin', $data);
             </div>
 
             <div class="col">
-                    <button style="height: 50px; width: 50px" type="submit" class="btn btn-secondary"> <i class="fa fa-search"></i></button>
+                    <button style="height: 50px; width: 50px" type="submit" class="btn"> <i class="fa fa-search"></i></button>
             </div>
             </div>
             <input type="hidden" name="module" value="contract">
@@ -245,11 +245,11 @@ layout('navbar', 'admin', $data);
     <div>
   
 </div>
-            <a href="<?php echo getLinkAdmin('contract', 'add') ?>" class="btn btn-secondary" style="color: #fff"><i class="fa fa-plus"></i> Thêm mới</a>
-            <a href="<?php echo getLinkAdmin('contract'); ?>" class="btn btn-secondary"><i class="fa fa-history"></i> Refresh</a>
-            <button type="submit" name="deleteMultip" value="Delete" onclick="return confirm('Bạn có chắn chắn muốn xóa không ?')" class="btn btn-secondary"><i class="fa fa-trash"></i> Xóa</button>
-            <a href="<?php echo getLinkAdmin('contract', 'import'); ?>" class="btn btn-secondary"><i class="fa fa-upload"></i> Import</a>
-            <a href="<?php echo getLinkAdmin('contract', 'export'); ?>" class="btn btn-secondary"><i class="fa fa-save"></i> Xuất Excel</a>
+            <a href="<?php echo getLinkAdmin('contract', 'add') ?>" class="btn"><i class="fa fa-plus"></i> Thêm mới</a>
+            <a href="<?php echo getLinkAdmin('contract'); ?>" class="btn "><i class="fa fa-history"></i> Refresh</a>
+            <button type="submit" name="deleteMultip" value="Delete" onclick="return confirm('Bạn có chắn chắn muốn xóa không ?')" class="btn"><i class="fa fa-trash"></i> Xóa</button>
+            <a href="<?php echo getLinkAdmin('contract', 'import'); ?>" class="btn "><i class="fa fa-upload"></i> Import</a>
+            <a href="<?php echo getLinkAdmin('contract', 'export'); ?>" class="btn "><i class="fa fa-save"></i> Xuất Excel</a>
 
             <table class="table table-bordered mt-3">
                 <thead>
@@ -291,7 +291,7 @@ layout('navbar', 'admin', $data);
                                 
                         <td>
                             <div class="image__contract">
-                                <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/contracts.png" class="image__room-img" alt="">
+                                <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/contracts.pnggg" class="image__room-img" alt="">
                             </div>
                         </td>
                         <td><?php echo $count; ?></td>
@@ -330,15 +330,15 @@ layout('navbar', 'admin', $data);
        
                         <td class="">
                             <div class="action">
-                                <button type="button" class="btn btn-secondary btn-sm"><i class="fa fa-ellipsis-v"></i></button>
+                                <button type="button" class="btn"><i class="fa fa-ellipsis-v"></i></button>
                                 <div class="box-action">
                                     <!-- Add your actions here -->
-                                    <a title="Xem hợp đồng" href="<?php echo getLinkAdmin('contract','view',['id' => $item['id']]); ?>" class="btn btn-success btn-sm"><i class="nav-icon fas fa-solid fa-eye"></i></a>
-                                    <a title="In hợp đồng" target="_blank" href="<?php echo getLinkAdmin('contract','print',['id' => $item['id']]) ?>" class="btn btn-dark btn-sm"><i class="fa fa-print"></i></a>
-                                    <a href="<?php echo getLinkAdmin('contract','edit',['id' => $item['id']]); ?>" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>
-                                    <a href="<?php echo getLinkAdmin('contract','delete',['id' => $item['id']]); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
+                                    <a title="Xem hợp đồng" href="<?php echo getLinkAdmin('contract','view',['id' => $item['id']]); ?>" class="btn"><i class="nav-icon fas fa-solid fa-eye"></i></a>
+                                    <a title="In hợp đồng" target="_blank" href="<?php echo getLinkAdmin('contract','print',['id' => $item['id']]) ?>" class="btn "><i class="fa fa-print"></i></a>
+                                    <a href="<?php echo getLinkAdmin('contract','edit',['id' => $item['id']]); ?>" class="btn "><i class="fa fa-edit"></i></a>
+                                    <a href="<?php echo getLinkAdmin('contract','delete',['id' => $item['id']]); ?>" class="btn " onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
                                     <form method="POST" action="">
-                                        <button type="submit" name="terminate" class="btn btn-warning btn-sm" onclick="return confirm('Bạn có chắc chắn muốn thanh lý hợp đồng này không?')" title="Thanh lý hợp đồng"><i class="fa fa-times"></i></button>
+                                        <button type="submit" name="terminate" class="btn" onclick="return confirm('Bạn có chắc chắn muốn thanh lý hợp đồng này không?')" title="Thanh lý hợp đồng"><i class="fa fa-times"></i></button>
                                         <input type="hidden" name="contract_id" value="<?php echo $item['id']; ?>">
                                     </form>
                                 </div>
