@@ -12,7 +12,7 @@ $grouId = $userDetail['group_id'];
 if($grouId != 7) {
     setFlashData('msg', 'Trang bạn muốn truy cập không tồn tại');
     setFlashData('msg_type', 'err');
-    redirect('/?module=dashboard');
+    redirect('admin/?module=');
 }
 
 $data = [
@@ -27,103 +27,55 @@ $filter = '';
 if (isGet()) {
     $body = getBody('get');
 
-    // Mảng để lưu trữ các điều kiện lọc
-    $filterConditions = [];
+   // Xử lý lọc Status theo trạng thái hợp đồng
+if (!empty($body['status'])) {
+    $status = $body['status'];
 
-    // Xử lý lọc Status theo trạng thái hợp đồng
-    if (!empty($body['status'])) {
-        $status = $body['status'];
-
-        // Xử lý trạng thái "Trong thời hạn", "Đã hết hạn" và "Sắp hết hạn"
-        if ($status == 1) {
-            // Trong thời hạn: Hợp đồng có ngày kết thúc lớn hơn ngày hiện tại
-            $statusSql = "DATEDIFF(contract.ngayra, NOW()) > 30";
-        } elseif ($status == 2) {
-            // Đã hết hạn: Hợp đồng có ngày kết thúc nhỏ hơn hoặc bằng ngày hiện tại
-            $statusSql = "DATEDIFF(contract.ngayra, NOW()) <= 0";
-        } elseif ($status == 3) {
-            // Sắp hết hạn: Hợp đồng có ngày kết thúc trong vòng 30 ngày tới và lớn hơn ngày hiện tại
-            $statusSql = "DATEDIFF(contract.ngayra, NOW()) <= 30 AND DATEDIFF(contract.ngayra, NOW()) > 0";
-        }
-
-        // Thêm điều kiện vào mảng
-        $filterConditions[] = $statusSql;
+    if (!empty($filter) && strpos($filter, 'WHERE') !== false) {
+        $operator = 'AND';
+    } else {
+        $operator = 'WHERE';
     }
+
+    // Xử lý trạng thái "Trong thời hạn", "Đã hết hạn" và "Sắp hết hạn"
+    if ($status == 1) {
+        // Trong thời hạn: Hợp đồng có ngày kết thúc lớn hơn ngày hiện tại
+        $statusSql = "DATEDIFF(contract.ngayra, NOW()) > 30";
+        $filter .= "$operator $statusSql";
+    } elseif ($status == 2) {
+        // Đã hết hạn: Hợp đồng có ngày kết thúc nhỏ hơn hoặc bằng ngày hiện tại
+        $statusSql = "DATEDIFF(contract.ngayra, NOW()) <= 0";
+        $filter .= "$operator $statusSql";
+    } elseif ($status == 3) {
+        // Sắp hết hạn: Hợp đồng có ngày kết thúc trong vòng 30 ngày tới và lớn hơn ngày hiện tại
+        $statusSql = "DATEDIFF(contract.ngayra, NOW()) <= 30 AND DATEDIFF(contract.ngayra, NOW()) > 0";
+        $filter .= "$operator $statusSql";
+    }
+}
+
 
     // Xử lý lọc Status theo tình trạng cọc
-    if (!empty($body['coc'])) {
+    if(!empty($body['coc'])) {
         $status2 = $body['coc'];
 
-        if ($status2 == 2) {
-            $statusSql2 = "tinhtrangcoc=0";
+        if($status2 == 2) {
+            $statusSql2 = 0;
         } else {
-            $statusSql2 = "tinhtrangcoc=$status2";
+            $statusSql2 = $status2;
         }
 
-        // Thêm điều kiện vào mảng
-        $filterConditions[] = $statusSql2;
+        if(!empty($filter) && strpos($filter, 'WHERE') !== false) {
+            $operator = 'AND';
+        } else {
+            $operator = 'WHERE';
+        }
+        
+        $filter .= "$operator tinhtrangcoc=$statusSql2";
     }
-
-    // Kết hợp các điều kiện thành một chuỗi SQL
-    if (!empty($filterConditions)) {
-        $filter = 'WHERE ' . implode(' AND ', $filterConditions);
-    }
 }
 
-// Xử lý hành động thanh lý hợp đồng
-if (isset($_POST['terminate'])) {
-    $contractId = $_POST['contract_id'];
-    $contract = getContractById($contractId);
 
-    if ($contract) {
-        // Thêm vào bảng lịch sử
-        addContractToHistory($contract);
 
-        // Xóa khỏi bảng hợp đồng
-        deleteContract($contractId);
-
-        setFlashData('msg', 'Thanh lý hợp đồng thuê trọ thành công');
-        setFlashData('msg_type', 'suc');
-    } else {
-        setFlashData('msg', 'Không tìm thấy hợp đồng');
-        setFlashData('msg_type', 'err');
-    }
-
-    redirect('?module=contract');
-}
-
-function getContractById($id) {
-    // Lấy hợp đồng từ database
-    return firstRaw("SELECT * FROM contract WHERE id = $id");
-}
-
-function addContractToHistory($contract) {
-    // Thêm hợp đồng vào bảng lịch sử
-    $data = [
-        'contract_id' => $contract['id'],
-        'room_id' => $contract['room_id'],
-        'soluongthanhvien' => $contract['soluongthanhvien'],
-        'ngaylaphopdong' => $contract['ngaylaphopdong'],
-        'ngayvao' => $contract['ngayvao'],
-        'ngayra' => $contract['ngayra'],
-        'ngaythanhly' => date('Y-m-d')
-    ];
-    insert('rental_history', $data);
-}
-
-function deleteContract($id) {
-    // Xóa hợp đồng khỏi database
-    delete('contract', "id = $id");
-}
-
-// Lấy thông tin khách của hợp đồng
-function getTenantsByRoomId($roomId) {
-    return getRaw("SELECT * FROM tenant WHERE room_id = $roomId");
-}
-
-// echo '<pre>';
-// print_r($tenantOfcontract); 
-// echo '</pre>'; die;
 /// Xử lý phân trang
 $allTenant = getRows("SELECT id FROM contract $filter");
 $perPage = _PER_PAGE; // Mỗi trang có 3 bản ghi
@@ -141,7 +93,7 @@ if(!empty(getBody()['page'])) {
     $page = 1;
 }
 $offset = ($page - 1) * $perPage;
-$listAllcontract = getRaw("SELECT *, contract.id, tenphong, giathue, tenkhach, tiencoc, soluong, contract.ngayvao as ngayvaoo, contract.ngayra as thoihanhopdong, tinhtrangcoc FROM contract 
+$listAllcontract = getRaw("SELECT *, contract.id, tenphong, tenkhach, giathue, tiencoc, contract.ngayvao as ngayvaoo, contract.ngayra as thoihanhopdong, zalo FROM contract 
 INNER JOIN room ON contract.room_id = room.id
 INNER JOIN tenant ON contract.tenant_id = tenant.id
 $filter LIMIT $offset, $perPage");
@@ -177,7 +129,7 @@ if(isset($_POST['deleteMultip'])) {
             setFlashData('msg', 'Xóa thông tin phòng trọ thành công');
             setFlashData('msg_type', 'suc');
         }
-        redirect('?module=contract');
+        redirect('admin/?module=contract');
 }
 
 $msg =getFlashData('msg');
@@ -197,8 +149,7 @@ layout('navbar', 'admin', $data);
 
     <div class="box-content">
         <?php if(!empty($expiringContracts)) { ?>
-                <!--thông báo  trên màn hình -->
-            <div class="alert " role="alert">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 Các phòng sắp hết hạn hợp đồng: <strong>
                 <?php foreach($expiringContracts as $item){
@@ -235,7 +186,7 @@ layout('navbar', 'admin', $data);
             </div>
 
             <div class="col">
-                    <button style="height: 50px; width: 50px" type="submit" class="btn"> <i class="fa fa-search"></i></button>
+                    <button style="height: 50px; width: 50px" type="submit" class="btn btn-success"> <i class="fa fa-search"></i></button>
             </div>
             </div>
             <input type="hidden" name="module" value="contract">
@@ -245,11 +196,11 @@ layout('navbar', 'admin', $data);
     <div>
   
 </div>
-            <a href="<?php echo getLinkAdmin('contract', 'add') ?>" class="btn"><i class="fa fa-plus"></i> Thêm mới</a>
-            <a href="<?php echo getLinkAdmin('contract'); ?>" class="btn "><i class="fa fa-history"></i> Refresh</a>
-            <button type="submit" name="deleteMultip" value="Delete" onclick="return confirm('Bạn có chắn chắn muốn xóa không ?')" class="btn"><i class="fa fa-trash"></i> Xóa</button>
-            <a href="<?php echo getLinkAdmin('contract', 'import'); ?>" class="btn "><i class="fa fa-upload"></i> Import</a>
-            <a href="<?php echo getLinkAdmin('contract', 'export'); ?>" class="btn "><i class="fa fa-save"></i> Xuất Excel</a>
+            <a href="<?php echo getLinkAdmin('contract', 'add') ?>" class="btn btn-success" style="color: #fff"><i class="fa fa-plus"></i> Thêm</a>
+            <a href="<?php echo getLinkAdmin('contract'); ?>" class="btn btn-secondary"><i class="fa fa-history"></i> Refresh</a>
+            <button type="submit" name="deleteMultip" value="Delete" onclick="return confirm('Bạn có chắn chắn muốn xóa không ?')" class="btn btn-danger"><i class="fa fa-trash"></i> Xóa</button>
+            <a href="<?php echo getLinkAdmin('contract', 'import'); ?>" class="btn btn-success minn"><i class="fa fa-upload"></i> Import</a>
+            <a href="<?php echo getLinkAdmin('contract', 'export'); ?>" class="btn btn-success minn"><i class="fa fa-save"></i> Xuất Excel</a>
 
             <table class="table table-bordered mt-3">
                 <thead>
@@ -261,7 +212,6 @@ layout('navbar', 'admin', $data);
                         <th wìdth="5%">STT</th>
                         <th>Tên phòng</th>
                         <th>Người đại diện</th>
-                        <th>Thành viên</th>
                         <th>Tổng thành viên</th>
                         <th>Giá thuê</th>
                         <th>Giá tiền cọc</th>
@@ -281,7 +231,6 @@ layout('navbar', 'admin', $data);
                             $count = 0; // Hiển thi số thứ tự
                             foreach($listAllcontract as $item):
                                 $count ++;  
-                                $tenants = getTenantsByRoomId($item['room_id']);
                     ?>
 
                     <tr>
@@ -290,21 +239,14 @@ layout('navbar', 'admin', $data);
                         </td>
                                 
                         <td>
-                            
+                            <div class="image__contract">
+                                <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/image-room.png" class="image__room-img" alt="">
+                            </div>
                         </td>
                         <td><?php echo $count; ?></td>
                         <td><b><?php echo $item['tenphong']; ?></b></td>
-                        <td><b><?php echo $item['tenkhach']; ?></b></td>
-                        <td>
-                            <?php if(!empty($tenants)) {
-                                foreach($tenants as $tenant) {
-                                    ?>
-                                        <span><?php echo $tenant['tenkhach'] ?></span> <br/>
-                                    <?php
-                                }
-                            } else {echo '<i>Chưa có ai</i>';} ?>
-                        </td>
-                        <td><img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/user.svg" alt=""> <?php echo $item['soluong'] ?> người</td>
+                        <td><?php echo $item['tenkhach'] ?></td>
+                        <td><img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/user.svg" alt=""> <?php echo $item['soluongthanhvien'] ?> người</td>
                         <td><b><?php echo number_format($item['giathue'], 0, ',', '.') ?> đ</b></td>
                         <td><b><?php echo number_format($item['tiencoc'], 0, ',', '.') ?> đ</b></td>
                         <td><?php echo $item['tinhtrangcoc'] == 0 ? '<span class="btn-kyhopdong-err">Chưa thu tiền</span>' : '<span class="btn-kyhopdong-suc">Đã thu tiền</span>' ?></td>
@@ -324,28 +266,18 @@ layout('navbar', 'admin', $data);
                                     echo '<span class="btn-kyhopdong-warning">' . $contractStatus . '</span>';
                                 }
                             ?>
-                        </td>   
-       
+                        </td>           
                         <td class="">
-                            <div class="action">
-                                <button type="button" class="btn"><i class="fa fa-ellipsis-v"></i></button>
-                                <div class="box-action">
-                                    <!-- Add your actions here -->
-                                    <a title="Xem hợp đồng" href="<?php echo getLinkAdmin('contract','view',['id' => $item['id']]); ?>" class="btn"><i class="nav-icon fas fa-solid fa-eye"></i></a>
-                                    <a title="In hợp đồng" target="_blank" href="<?php echo getLinkAdmin('contract','print',['id' => $item['id']]) ?>" class="btn "><i class="fa fa-print"></i></a>
-                                    <a href="<?php echo getLinkAdmin('contract','edit',['id' => $item['id']]); ?>" class="btn "><i class="fa fa-edit"></i></a>
-                                    <a href="<?php echo getLinkAdmin('contract','delete',['id' => $item['id']]); ?>" class="btn " onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
-                                    <form method="POST" action="">
-                                        <button type="submit" name="terminate" class="btn" onclick="return confirm('Bạn có chắc chắn muốn thanh lý hợp đồng này không?')" title="Thanh lý hợp đồng"><i class="fa fa-times"></i></button>
-                                        <input type="hidden" name="contract_id" value="<?php echo $item['id']; ?>">
-                                    </form>
-                                </div>
-                            </div>
-                        </td>
-                                          
+                            <a title="Xem hợp đồng" href="<?php echo getLinkAdmin('contract','view',['id' => $item['id']]); ?>" class="btn btn-primary btn-sm" ><i class="nav-icon fas fa-solid fa-eye"></i> </a>
+                            <a title="In hợp đồng" target="_blank" href="<?php echo getLinkAdmin('contract','print',['id' => $item['id']]) ?>" class="btn btn-secondary btn-sm" ><i class="fa fa-print"></i> </a>
+                            <a target="_blank" href="<?php echo $item['zalo'] ?>"><img style="width: 30px; height: 30px" src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/zalo.jpg" alt=""></a>
+                            <a href="<?php echo getLinkAdmin('contract','edit',['id' => $item['id']]); ?>" class="btn btn-warning btn-sm" ><i class="fa fa-edit"></i> </a>
+                            <a href="<?php echo getLinkAdmin('contract','delete',['id' => $item['id']]); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i> </a>
+                        </td>                
+                         
                     <?php endforeach; else: ?>
                         <tr>
-                            <td colspan="16">
+                            <td colspan="15">
                                 <div class="alert alert-danger text-center">Không có dữ liệu hợp đồng</div>
                             </td>
                         </tr>
@@ -358,7 +290,7 @@ layout('navbar', 'admin', $data);
                 <?php
                     if($page > 1) {
                         $prePage = $page - 1;
-                    echo '<li class="page-item"><a class="page-link" href="'._WEB_HOST_ROOT.'/?module=contract'.$queryString. '&page='.$prePage.'">Pre</a></li>';
+                    echo '<li class="page-item"><a class="page-link" href="'._WEB_HOST_ROOT_ADMIN.'/?module=contract'.$queryString. '&page='.$prePage.'">Pre</a></li>';
                     }
                 ?>
 
@@ -374,14 +306,14 @@ layout('navbar', 'admin', $data);
                     }
                     for($index = $begin; $index <= $end; $index++){  ?>
                 <li class="page-item <?php echo ($index == $page) ? 'active' : false; ?> ">
-                    <a class="page-link" href="<?php echo _WEB_HOST_ROOT.'?module=contract'.$queryString.'&page='.$index;  ?>"> <?php echo $index;?> </a>
+                    <a class="page-link" href="<?php echo _WEB_HOST_ROOT_ADMIN.'?module=contract'.$queryString.'&page='.$index;  ?>"> <?php echo $index;?> </a>
                 </li>
                 <?php  } ?>
                 
                 <?php
                     if($page < $maxPage) {
                         $nextPage = $page + 1;
-                        echo '<li class="page-item"><a class="page-link" href="'._WEB_HOST_ROOT.'?module=contract'.$queryString.'&page='.$nextPage.'">Next</a></li>';
+                        echo '<li class="page-item"><a class="page-link" href="'._WEB_HOST_ROOT_ADMIN.'?module=contract'.$queryString.'&page='.$nextPage.'">Next</a></li>';
                     }
                 ?>
             </ul>
@@ -396,44 +328,6 @@ layout('footer', 'admin');
 ?>
 
 <script>
-
-document.addEventListener('DOMContentLoaded', function() {
-        // Select all action buttons
-        const actionButtons = document.querySelectorAll('.action');
-
-        actionButtons.forEach(button => {
-            button.addEventListener('click', function(event) {
-                // Prevent event bubbling
-                event.stopPropagation();
-                
-                // Toggle the active class
-                button.classList.toggle('active');
-                
-                // Hide all other .box-action elements
-                actionButtons.forEach(btn => {
-                    if (btn !== button) {
-                        btn.classList.remove('active');
-                    }
-                });
-            });
-        });
-
-        // Hide .box-action when clicking outside
-        document.addEventListener('click', function(event) {
-            actionButtons.forEach(button => {
-                button.classList.remove('active');
-            });
-        });
-
-        // Prevent .box-action click from closing itself
-        const boxActions = document.querySelectorAll('.box-action');
-        boxActions.forEach(box => {
-            box.addEventListener('click', function(event) {
-                event.stopPropagation();
-            });
-        });
-    });
-    
     function toggle(__this){
        let isChecked = __this.checked;
        let checkbox = document.querySelectorAll('input[name="records[]"]');

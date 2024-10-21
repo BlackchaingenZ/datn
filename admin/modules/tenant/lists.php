@@ -12,7 +12,7 @@ $grouId = $userDetail['group_id'];
 if($grouId != 7) {
     setFlashData('msg', 'Trang bạn muốn truy cập không tồn tại');
     setFlashData('msg_type', 'err');
-    redirect('?module=dashboard');
+    redirect('admin/?module=');
 }
 
 $data = [
@@ -32,7 +32,7 @@ if(isset($_POST['deleteMultip'])) {
             setFlashData('msg_type', 'suc');
         }
 
-        redirect('?module=tenant');
+        redirect('admin/?module=tenant');
 }
 
 // Xử lý lọc dữ liệu
@@ -86,7 +86,7 @@ if(!empty(getBody()['page'])) {
     $page = 1;
 }
 $offset = ($page - 1) * $perPage;
-$listAllTenant = getRaw("SELECT *, tenant.id, tenphong, tenant.ngayvao as ngayvao FROM tenant LEFT JOIN room ON tenant.room_id = room.id  $filter ORDER BY tenphong LIMIT $offset, $perPage");
+$listAllTenant = getRaw("SELECT *, tenant.id, tenphong FROM tenant INNER JOIN room ON tenant.room_id = room.id  $filter LIMIT $offset, $perPage");
 
 // Xử lý query string tìm kiếm với phân trang
 $queryString = null;
@@ -144,7 +144,7 @@ layout('navbar', 'admin', $data);
             </div>
 
             <div class="col">
-                    <button style="height: 50px; width: 50px" type="submit" class="btn "> <i class="fa fa-search"></i></button>
+                    <button style="height: 50px; width: 50px" type="submit" class="btn btn-success"> <i class="fa fa-search"></i></button>
             </div>
             </div>
             <input type="hidden" name="module" value="tenant">
@@ -154,11 +154,11 @@ layout('navbar', 'admin', $data);
     <div>
 
 </div>
-            <a href="<?php echo getLinkAdmin('tenant', 'add') ?>" class="btn " ><i class="fa fa-plus"></i> Thêm mới</a>
-            <a href="<?php echo getLinkAdmin('tenant', 'lists'); ?>" class="btn "><i class="fa fa-history"></i> Refresh</a>
-            <button type="submit" name="deleteMultip" value="Delete" onclick="return confirm('Bạn có chắn chắn muốn xóa không ?')" class="btn "><i class="fa fa-trash"></i> Xóa</button>
-            <a href="<?php echo getLinkAdmin('tenant', 'import'); ?>" class="btn "><i class="fa fa-upload"></i> Import</a>
-            <a href="<?php echo getLinkAdmin('tenant', 'export'); ?>" class="btn "><i class="fa fa-save"></i> Xuất Excel</a>
+            <a href="<?php echo getLinkAdmin('tenant', 'add') ?>" class="btn btn-success" style="color: #fff"><i class="fa fa-plus"></i> Thêm</a>
+            <a href="<?php echo getLinkAdmin('tenant', 'lists'); ?>" class="btn btn-secondary"><i class="fa fa-history"></i> Refresh</a>
+            <button type="submit" name="deleteMultip" value="Delete" onclick="return confirm('Bạn có chắn chắn muốn xóa không ?')" class="btn btn-danger"><i class="fa fa-trash"></i> Xóa</button>
+            <a href="<?php echo getLinkAdmin('tenant', 'import'); ?>" class="btn btn-success minn"><i class="fa fa-upload"></i> Import</a>
+            <a href="<?php echo getLinkAdmin('tenant', 'export'); ?>" class="btn btn-success minn"><i class="fa fa-save"></i> Xuất Excel</a>
             
             <table class="table table-bordered mt-3" id="dataTable">
                 <thead>
@@ -177,7 +177,6 @@ layout('navbar', 'admin', $data);
                         <th>Mặt trước CCCD</th>
                         <th>Mặt sau CCCD</th>
                         <th>Phòng đang ở</th>
-                        <th>Ngày vào ở</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
@@ -197,7 +196,7 @@ layout('navbar', 'admin', $data);
                                 
                         <td>
                             <div class="tenant_avt">
-                                <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/clients.svgg" class="image__room-img" alt="">
+                                <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/tenant_avt.svg" class="image__room-img" alt="">
                             </div>
                         </td>
                         <td><b><?php echo $item['tenkhach']; ?></b></td>
@@ -216,22 +215,14 @@ layout('navbar', 'admin', $data);
                         </td>
                         <td><?php echo $item['cmnd'] ?></td>
                         <td><?php echo $item['ngaycap'] ?></td>
-                        <td ><a href="<?php echo getLinkAdmin('tenant','view-pre',['id' => $item['id']]); ?>" target="_blank"><?php echo (isFontIcon($item['anhmattruoc']))?$item['anhmattruoc']:'<img src="'.$item['anhmattruoc'].'"  width=70 height=50/>' ?></a></td>
-                        <td ><a href="<?php echo getLinkAdmin('tenant','view-after',['id' => $item['id']]); ?>" target="_blank"><?php echo (isFontIcon($item['anhmatsau']))?$item['anhmatsau']:'<img src="'.$item['anhmatsau'].'"  width=70 height=50/>' ?></a></td>
-                        <td>
-                            <?php if(!empty($item['tenphong'])) { ?>
-                                <p class="btn " style="color: black; font-size: 12px"><?php echo $item['tenphong'] ?></p>
-                            <?php } else {
-                                ?>
-                                    <i>Không</i>
-                                <?php
-                            } ?>
-                        </td>
-                        <td><?php echo $item['ngayvao'] ?></td>
+                        <td ><?php echo (isFontIcon($item['anhmattruoc']))?$item['anhmattruoc']:'<img src="'.$item['anhmattruoc'].'"  width=70 height=50/>' ?></td>
+                        <td><?php echo (isFontIcon($item['anhmatsau']))?$item['anhmatsau']:'<img src="'.$item['anhmatsau'].'" width=70 height=50/>' ?></td>
+                        <td><p class="btn btn-info btn-sm" style="color: #fff; font-size: 12px"><?php echo $item['tenphong'] ?></p></td>
+
                         <td class="">
-                        
-                            <a href="<?php echo getLinkAdmin('tenant','edit',['id' => $item['id']]); ?>" class="btn " ><i class="fa fa-edit"></i> </a>
-                            <a href="<?php echo getLinkAdmin('tenant','delete',['id' => $item['id']]); ?>" class="btn " onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i> </a>
+                            <a target="_blank" href="<?php echo $item['zalo'] ?>"><img style="width: 30px; height: 30px" src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/zalo.jpg" alt=""></a>
+                            <a href="<?php echo getLinkAdmin('tenant','edit',['id' => $item['id']]); ?>" class="btn btn-warning btn-sm" ><i class="fa fa-edit"></i> </a>
+                            <a href="<?php echo getLinkAdmin('tenant','delete',['id' => $item['id']]); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i> </a>
                         </td>                
                          
                     <?php endforeach; else: ?>
@@ -249,7 +240,7 @@ layout('navbar', 'admin', $data);
                 <?php
                     if($page > 1) {
                         $prePage = $page - 1;
-                    echo '<li class="page-item"><a class="page-link" href="'._WEB_HOST_ROOT.'/?module=tenant'.$queryString. '&page='.$prePage.'">Pre</a></li>';
+                    echo '<li class="page-item"><a class="page-link" href="'._WEB_HOST_ROOT_ADMIN.'/?module=tenant'.$queryString. '&page='.$prePage.'">Pre</a></li>';
                     }
                 ?>
 
@@ -265,14 +256,14 @@ layout('navbar', 'admin', $data);
                     }
                     for($index = $begin; $index <= $end; $index++){  ?>
                 <li class="page-item <?php echo ($index == $page) ? 'active' : false; ?> ">
-                    <a class="page-link" href="<?php echo _WEB_HOST_ROOT.'?module=tenant'.$queryString.'&page='.$index;  ?>"> <?php echo $index;?> </a>
+                    <a class="page-link" href="<?php echo _WEB_HOST_ROOT_ADMIN.'?module=tenant'.$queryString.'&page='.$index;  ?>"> <?php echo $index;?> </a>
                 </li>
                 <?php  } ?>
                 
                 <?php
                     if($page < $maxPage) {
                         $nextPage = $page + 1;
-                        echo '<li class="page-item"><a class="page-link" href="'._WEB_HOST_ROOT.'?module=tenant'.$queryString.'&page='.$nextPage.'">Next</a></li>';
+                        echo '<li class="page-item"><a class="page-link" href="'._WEB_HOST_ROOT_ADMIN.'?module=tenant'.$queryString.'&page='.$nextPage.'">Next</a></li>';
                     }
                 ?>
             </ul>
