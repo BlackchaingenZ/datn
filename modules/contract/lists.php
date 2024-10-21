@@ -70,27 +70,6 @@ if (isGet()) {
     }
 }
 
-// Xử lý hành động thanh lý hợp đồng
-if (isset($_POST['terminate'])) {
-    $contractId = $_POST['contract_id'];
-    $contract = getContractById($contractId);
-
-    if ($contract) {
-        // Thêm vào bảng lịch sử
-        addContractToHistory($contract);
-
-        // Xóa khỏi bảng hợp đồng
-        deleteContract($contractId);
-
-        setFlashData('msg', 'Thanh lý hợp đồng thuê trọ thành công');
-        setFlashData('msg_type', 'suc');
-    } else {
-        setFlashData('msg', 'Không tìm thấy hợp đồng');
-        setFlashData('msg_type', 'err');
-    }
-
-    redirect('?module=contract');
-}
 
 function getContractById($id) {
     // Lấy hợp đồng từ database
@@ -248,8 +227,7 @@ layout('navbar', 'admin', $data);
             <a href="<?php echo getLinkAdmin('contract', 'add') ?>" class="btn"><i class="fa fa-plus"></i> Thêm mới</a>
             <a href="<?php echo getLinkAdmin('contract'); ?>" class="btn "><i class="fa fa-history"></i> Refresh</a>
             <button type="submit" name="deleteMultip" value="Delete" onclick="return confirm('Bạn có chắn chắn muốn xóa không ?')" class="btn"><i class="fa fa-trash"></i> Xóa</button>
-            <a href="<?php echo getLinkAdmin('contract', 'import'); ?>" class="btn "><i class="fa fa-upload"></i> Import</a>
-            <a href="<?php echo getLinkAdmin('contract', 'export'); ?>" class="btn "><i class="fa fa-save"></i> Xuất Excel</a>
+           
 
             <table class="table table-bordered mt-3">
                 <thead>
@@ -335,10 +313,7 @@ layout('navbar', 'admin', $data);
                                     <a title="In hợp đồng" target="_blank" href="<?php echo getLinkAdmin('contract','print',['id' => $item['id']]) ?>" class="btn "><i class="fa fa-print"></i></a>
                                     <a href="<?php echo getLinkAdmin('contract','edit',['id' => $item['id']]); ?>" class="btn "><i class="fa fa-edit"></i></a>
                                     <a href="<?php echo getLinkAdmin('contract','delete',['id' => $item['id']]); ?>" class="btn " onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
-                                    <form method="POST" action="">
-                                        <button type="submit" name="terminate" class="btn" onclick="return confirm('Bạn có chắc chắn muốn thanh lý hợp đồng này không?')" title="Thanh lý hợp đồng"><i class="fa fa-times"></i></button>
-                                        <input type="hidden" name="contract_id" value="<?php echo $item['id']; ?>">
-                                    </form>
+                                    
                                 </div>
                             </div>
                         </td>

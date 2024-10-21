@@ -158,7 +158,9 @@ layout('navbar', 'admin', $data);
                         <!-- Item 1 -->
                         <div class="service-item">
                             <div class="service-item_left">
-                                
+                                <div class="service-item_icon">
+                                    <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/service-icon.svg" alt="">
+                                </div>
 
                                 <div>
                                     <h6><?php echo $item['tendichvu'] ?></h6>
