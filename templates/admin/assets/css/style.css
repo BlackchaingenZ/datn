@@ -216,47 +216,12 @@ box-content {
 
 
 
-.service-item_icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 50px;
-    height: 50px;
-    background: #e6e4e4;
-    border-radius: 50%;
-}
 
 
 
-.service-item_right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.service-item_right .edit {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #43b0fd;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm bóng */
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Hiệu ứng mượt mà */
-}
 
 
 
-.service-item_right .del {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #ee3a4e;
-   
-}
+
 
 

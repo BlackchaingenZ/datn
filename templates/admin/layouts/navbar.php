@@ -84,6 +84,30 @@
             <p class="menu__item-title">Lịch sử hợp đồng</p>
           </div>
         </a>
+
+        <!-- Item 10 -->
+        <a href="<?php echo getLinkAdmin('rental_history'); ?>" class="link__menu ">
+          <div class="menu__item">
+            <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/icons8-report.png" class="menu__item-image" alt="">
+            <p class="menu__item-title">Báo cáo tổng hợp</p>
+          </div>
+        </a>
+
+        <!-- Item 11 -->
+        <a href="<?php echo getLinkAdmin('rental_history'); ?>" class="link__menu ">
+          <div class="menu__item">
+            <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/icons8-tools.png" class="menu__item-image" alt="">
+            <p class="menu__item-title">Cơ sở vật chất</p>
+          </div>
+        </a>
+
+        <!-- Item 12 -->
+        <a href="<?php echo getLinkAdmin('rental_history'); ?>" class="link__menu ">
+          <div class="menu__item">
+            <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/icons8-average-price.png" class="menu__item-image" alt="">
+            <p class="menu__item-title">Bảng giá</p>
+          </div>
+        </a>
       </div>
     </div>
   </section>
