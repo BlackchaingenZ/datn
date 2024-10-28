@@ -262,7 +262,159 @@ function getContractStatus($endDate) {
     }
 }
 
+// truy vấn lấy dữ liệu của equipment xem có đang liên lết với room nào không
+function getRow($sql)
+{
+    global $pdo; // Sử dụng kết nối PDO toàn cục
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC); // Trả về một dòng dưới dạng mảng liên kết
+}
+
+// Hàm thực hiện xóa thiết bị khỏi phòng, với đối tượng $pdo truyền vào
+function deleteEquipmentFromRoom($pdo, $roomId, $equipmentId)
+{
+    // Truy vấn để xóa thiết bị khỏi phòng dựa trên room_id và equipment_id
+    $stmt = $pdo->prepare("DELETE FROM equipment_room WHERE room_id = :roomId AND equipment_id = :equipmentId");
+    $stmt->bindParam(':roomId', $roomId);
+    $stmt->bindParam(':equipmentId', $equipmentId);
+
+    return $stmt->execute(); // Trả về true nếu xóa thành công
+}
+
+// Hàm thực hiện xóa khu vực khỏi phòng, với đối tượng $pdo truyền vào
+function deleteAreaFromRoom($pdo, $roomId, $areaId)
+{
+    // Truy vấn để xóa khu vực khỏi phòng dựa trên room_id và equipment_id
+    $stmt = $pdo->prepare("DELETE FROM area_room WHERE room_id = :roomId AND area_id = :areaId");
+    $stmt->bindParam(':roomId', $roomId);
+    $stmt->bindParam(':areaId', $areaId);
+
+    return $stmt->execute(); // Trả về true nếu xóa thành công
+}
+
+// Hàm thực hiện xóa loại giá khỏi phòng, với đối tượng $pdo truyền vào
+function deleteCostFromRoom($pdo, $roomId, $costId)
+{
+    // Truy vấn để xóa thiết bị khỏi phòng dựa trên room_id và cost_id
+    $stmt = $pdo->prepare("DELETE FROM cost_room WHERE room_id = :roomId AND cost_id = :costId");
+    $stmt->bindParam(':roomId', $roomId);
+    $stmt->bindParam(':costId', $costId);
+
+    return $stmt->execute(); // Trả về true nếu xóa thành công
+}
+
+// kiểm tra thiết bị có ở trong phòng không(lấy toàn bộ chưa check)
+function checkEquipmentInRoom($pdo, $roomId)
+{
+    // Truy vấn để kiểm tra xem phòng có thiết bị không
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM equipment_room WHERE room_id = :roomId");
+    $stmt->bindParam(':roomId', $roomId);
+    $stmt->execute();
+
+    // Trả về số lượng thiết bị trong phòng
+    return $stmt->fetchColumn();
+}
+function checkAreaInRoom($pdo, $roomId)
+{
+    // Truy vấn để kiểm tra xem phòng có thiết bị không
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM area_room WHERE room_id = :roomId");
+    $stmt->bindParam(':roomId', $roomId);
+    $stmt->execute();
+
+    // Trả về số lượng thiết bị trong phòng
+    return $stmt->fetchColumn();
+}
+// kiểm tra bảng giá có ở trong phòng hay không
+function checkcostInRoom($pdo, $roomId)
+{
+    // Truy vấn để kiểm tra xem phòng có thiết bị không
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM cost_room WHERE room_id = :roomId");
+    $stmt->bindParam(':roomId', $roomId);
+    $stmt->execute();
+
+    // Trả về số lượng thiết bị trong phòng
+    return $stmt->fetchColumn();
+}
+
+// kiểm tra xem thiết bị đấy có tồn tại trong phòng không
+function checkAreaInRoomById($pdo, $roomId, $areaId)
+{
+    try {
+        // Câu truy vấn kiểm tra thiết bị có trong phòng hay không
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM area_room WHERE room_id = :room_id AND area_id = :area_id");
+        $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
+        $stmt->bindParam(':area_id', $areaId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Lấy kết quả đếm
+        $count = $stmt->fetchColumn();
+
+        // Nếu kết quả lớn hơn 0, thiết bị tồn tại trong phòng
+        return $count > 0;
+    } catch (PDOException $e) {
+        // Xử lý lỗi nếu có vấn đề với cơ sở dữ liệu
+        return false;
+    }
+}
+
+// kiểm tra xem thiết bị đấy có tồn tại trong phòng không
+function checkEquipmenntInRoomById($pdo, $roomId, $equipmentId)
+{
+    try {
+        // Câu truy vấn kiểm tra thiết bị có trong phòng hay không
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM equipment_room WHERE room_id = :room_id AND equipment_id = :equipment_id");
+        $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
+        $stmt->bindParam(':equipment_id', $equipmentId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Lấy kết quả đếm
+        $count = $stmt->fetchColumn();
+
+        // Nếu kết quả lớn hơn 0, thiết bị tồn tại trong phòng
+        return $count > 0;
+    } catch (PDOException $e) {
+        // Xử lý lỗi nếu có vấn đề với cơ sở dữ liệu
+        return false;
+    }
+}
+
+function checkCostInRoomById($pdo, $roomId, $costId)
+{
+    try {
+        // Câu truy vấn kiểm tra bảng giá có trong phòng hay không
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM cost_room WHERE room_id = :room_id AND cost_id = :cost_id");
+        $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
+        $stmt->bindParam(':cost_id', $costId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Lấy kết quả đếm
+        $count = $stmt->fetchColumn();
+
+        // Nếu kết quả lớn hơn 0, thiết bị tồn tại trong phòng
+        return $count > 0;
+    } catch (PDOException $e) {
+        // Xử lý lỗi nếu có vấn đề với cơ sở dữ liệu
+        return false;
+    }
+}
 
 
+// Hàm thực hiện truy vấn thông tin cost
+function executeResult($query, $params = [])
+{
+    try {
+        // Sử dụng kết nối cơ sở dữ liệu có sẵn, giả sử nó được lưu trong biến $pdo
+        global $pdo;
 
+        // Chuẩn bị và thực hiện truy vấn
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
 
+        // Lấy tất cả kết quả truy vấn
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Lỗi truy vấn cơ sở dữ liệu: " . $e->getMessage();
+        return [];
+    }
+}

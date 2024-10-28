@@ -60,9 +60,10 @@ a {
 .menu__list {
     padding: 2px 0;
     display: flex;
-    justify-content: space-between;
-    /* gap: 20px; */
-    overflow-x:auto;
+    /* Chia đều khoảng cách giữa các phần tử */
+    flex-wrap: wrap;
+    row-gap: 20px;
+    overflow-x: hidden;
 }
 
 
@@ -209,6 +210,11 @@ box-content {
     padding: 10px 10px;
     border-radius: 12px;  
     
+}
+
+.image__equipment-img {
+    width: 30px;
+    height: 30px;
 }
 
 

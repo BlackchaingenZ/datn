@@ -149,6 +149,11 @@ layout('navbar', 'admin', $data);
                     <h3>Quản lý dịch vụ</h3>
                     <i>Các dịch vụ khách sử dụng</i>
                 </div>
+
+                <span>
+            <a href="<?php echo getLinkAdmin('services', 'add') ?>" class="btn btn-secondary" style="color: #fff"><i class="fa fa-plus"></i> Thêm mới </a>
+</span>
+
                 <!--<button class="service-btn" style="border: none; color: #fff" onclick="return alert('Chức năng này đang được mở rộng')"><i class="fa fa-plus"></i></button>-->
             </div>
 

@@ -7,7 +7,7 @@ require_once 'config.php';
 require_once 'includes/phpmailer/PHPMailer.php';
 require_once 'includes/phpmailer/Exception.php';
 require_once 'includes/phpmailer/SMTP.php';
-
+require_once 'includes/pdo_connection.php';
 require_once 'includes/functions.php';
 require_once 'includes/connect.php';
 require_once 'includes/database.php';

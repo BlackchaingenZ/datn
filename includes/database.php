@@ -66,6 +66,24 @@ function delete($table, $condition=''){
     return query($sql);
 }
 
+function deleteEquipment($roomId, $equipmentId)
+{
+    global $pdo; // Giả sử bạn đang sử dụng PDO
+
+    // Tạo câu lệnh SQL để xóa
+    $sql = "DELETE FROM equipment_room WHERE room_id = :room_id AND equipment_id = :equipment_id";
+
+    // Chuẩn bị câu lệnh
+    $stmt = $pdo->prepare($sql);
+
+    // Liên kết các tham số
+    $stmt->bindParam(':room_id', $roomId, PDO::PARAM_INT);
+    $stmt->bindParam(':equipment_id', $equipmentId, PDO::PARAM_INT);
+
+    // Thực hiện truy vấn và trả về kết quả
+    return $stmt->execute();
+}
+
 //Lấy dữ liệu từ câu lệnh SQL - Lấy tất cả
 function getRaw($sql){
     $statement = query($sql, [], true);
