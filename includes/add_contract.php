@@ -3,7 +3,7 @@ function addContract($dataInsert, $services_ids)
 {
     try {
         // Kết nối cơ sở dữ liệu
-        $pdo = new PDO('mysql:host=localhost;dbname=datn', 'root', '');
+        $pdo = new PDO('mysql:host=localhost;dbname=datn', 'root', '123456');
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Bắt đầu giao dịch
