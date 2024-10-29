@@ -141,8 +141,8 @@ if (isset($_POST['search'])) {
                                 <td><b><?php echo $item['mota']; ?></b></td>
                                 <td><?php echo $item['ngaytao']; ?></td>
                                 <td class="" style="width: 100px; height: 50px;">
-                                    <a href="<?php echo getLinkAdmin('area', 'editarea', ['id' => $item['id']]); ?>" class="btn btn-primary btn-sm" style="margin-right: 9px;"><i class="fa fa-edit"></i> </a>
-                                    <a href="<?php echo getLinkAdmin('area', 'deletearea', ['id' => $item['id']]); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i> </a>
+                                    <a href="<?php echo getLinkAdmin('area', 'editarea', ['id' => $item['id']]); ?>" class="btn  btn-sm" style="margin-right: 9px;"><i class="fa fa-edit"></i> </a>
+                                    <a href="<?php echo getLinkAdmin('area', 'deletearea', ['id' => $item['id']]); ?>" class="btn  btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i> </a>
                                 </td>
                             </tr>
                         <?php endforeach;

@@ -176,8 +176,7 @@ box-content {
     padding: 20px 20px;
     border-radius: 12px;
     width: 30%;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Bóng đổ nhẹ */
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Hiệu ứng mượt mà */
+
 }
 
 .service-left_top {

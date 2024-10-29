@@ -127,10 +127,10 @@ layout('navbar', 'admin', $data);
 
                                 <td class="" style="width: 100px; height: 50px;">
 
-                                    <a href="<?php echo getLinkAdmin('area', 'editapplyarea', ['applyarea' => $item['room_id']]); ?>" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>
+                                    <a href="<?php echo getLinkAdmin('area', 'editapplyarea', ['applyarea' => $item['room_id']]); ?>" class="btn btn-sm"><i class="fa fa-edit"></i></a>
 
                                     <a href="<?php echo getLinkAdmin('area', 'deleteapplyarea', ['room_id' => $item['room_id']]); ?>"
-                                        class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
+                                        class="btn  btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
                                 </td>
                             </tr>
                         <?php endforeach;

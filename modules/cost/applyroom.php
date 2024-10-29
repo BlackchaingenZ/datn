@@ -118,9 +118,9 @@ $listRoomAndCost = getRoomAndCostList();
                                 <td><b><?php echo $item['tengia']; ?></b></td>
                                 <td><?php echo $item['thoigianapdung']; ?></td>
                                 <td class="" style="width: 100px; height: 50px;">
-                                <a href="<?php echo getLinkAdmin('cost', 'editapplycost', ['applycost' => $item['room_id']]); ?>" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>
+                                <a href="<?php echo getLinkAdmin('cost', 'editapplycost', ['applycost' => $item['room_id']]); ?>" class="btn btn-sm"><i class="fa fa-edit"></i></a>
 
-                                <a href="<?php echo getLinkAdmin('cost', 'deleteapplycost', ['room_id' => $item['room_id']]); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
+                                <a href="<?php echo getLinkAdmin('cost', 'deleteapplycost', ['room_id' => $item['room_id']]); ?>" class="btn btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
 
                                 </td>
                             </tr>

@@ -188,7 +188,7 @@ layout('navbar', 'admin', $data);
              ?>
         </div>
 
-        <div class="service-right">
+        <!-- <div class="service-right">
                 <div class="right-inner">
                     <div class="inner-left">
                         <h3>Khách thuê sử dụng trong tháng</h3>
@@ -197,7 +197,7 @@ layout('navbar', 'admin', $data);
 
                     <div class="inner-right">
                         <!-- Tìm kiếm -->
-                        <form action="" method="get">
+                        <!-- <form action="" method="get">
                             <div class="row">
                                 <div class="col-8">
                                     <input style="height: 50px" type="month" class="form-control" name="datebill" id="" value="<?php echo (!empty($datebill))? $datebill:$currentMonthYear; ?>">
@@ -208,10 +208,10 @@ layout('navbar', 'admin', $data);
                                  </div>   
                             </div>
                             <input type="hidden" name="module" value="services">
-                        </form>
+                        </form> -->
                     </div>
                 </div>
-
+<!-- 
                 <table class="table table-bordered mt-3">
                 <thead>
                     <tr>
@@ -270,8 +270,8 @@ layout('navbar', 'admin', $data);
                         </tr>
                     <?php endif; ?>
                 </tbody>
-            </table>
-        </div>
+            </table> -->
+        </div> -->
     </div>
 </div>
 
