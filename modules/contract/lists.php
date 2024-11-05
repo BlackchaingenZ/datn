@@ -148,19 +148,18 @@ $listAllcontract = getRaw("
         contract.id, 
         tenphong, 
         cost.giathue,
-        tenant1.tenkhach AS tenant_name_1, 
-        tenant2.tenkhach AS tenant_name_2, 
         tiencoc, 
         soluongthanhvien, 
         contract.ngayvao AS ngayvaoo, 
         contract.ngayra AS thoihanhopdong, 
         contract.ghichu,
         tinhtrangcoc, 
+        GROUP_CONCAT(DISTINCT tenant.tenkhach ORDER BY tenant.tenkhach ASC SEPARATOR '\n') AS tenant_id_1, 
         GROUP_CONCAT(DISTINCT services.tendichvu ORDER BY services.tendichvu ASC SEPARATOR ', ') AS tendichvu 
     FROM contract 
     INNER JOIN room ON contract.room_id = room.id
-    LEFT JOIN tenant AS tenant1 ON contract.tenant_id = tenant1.id
-    LEFT JOIN tenant AS tenant2 ON contract.tenant_id_2 = tenant2.id
+    INNER JOIN contract_tenant ON contract.id = contract_tenant.contract_id_1
+    INNER JOIN tenant ON contract_tenant.tenant_id_1 = tenant.id
     INNER JOIN cost_room ON room.id = cost_room.room_id 
     INNER JOIN cost ON cost_room.cost_id = cost.id
     LEFT JOIN contract_services ON contract.id = contract_services.contract_id 
@@ -195,55 +194,54 @@ if (!empty($_SERVER['QUERY_STRING'])) {
     $queryString = '&' . $queryString;
 }
 
-// Xóa hết
-// if (isset($_POST['deleteMultip'])) {
-//     $numberCheckbox = $_POST['records'];
-//     $extract_id = implode(',', $numberCheckbox);
-//     $checkDelete = delete('contract', "id IN($extract_id)");
-//     if ($checkDelete) {
-//         setFlashData('msg', 'Xóa thông tin phòng trọ thành công');
-//         setFlashData('msg_type', 'suc');
-//     }
-//     redirect('?module=contract');
-// }
 if (isset($_POST['deleteMultip'])) {
-    $numberCheckbox = $_POST['records']; // Lấy các ID thiết bị đã chọn
+    $numberCheckbox = $_POST['records'];
+
     if (empty($numberCheckbox)) {
         setFlashData('msg', 'Bạn chưa chọn mục nào để xóa!');
         setFlashData('msg_type', 'err');
     } else {
-        // Chuyển mảng các ID thiết bị thành chuỗi để sử dụng trong câu truy vấn SQL
-        $extract_id = implode(',', array_map('intval', $numberCheckbox));
+        $extract_id = implode(',', $numberCheckbox);
 
-        try {
-            // Kiểm tra trước nếu có dịch vụ  nào đang được sử dụng trong bảng contact_services
-            $sqlCheck = "SELECT COUNT(*) AS count FROM contract_services WHERE contract_id IN ($extract_id)";
-            $count = getRow($sqlCheck)['count'];
+        // Kiểm tra có tenant nào liên kết với hợp đồng qua bảng contract_tenant
+        $checkTenants = get('contract_tenant', "contract_id_1 IN($extract_id)");
 
-            if ($count > 0) {
-                // Nếu dịch vụ đang được sử dụng trong hợp đồng, không thực hiện xóa
-                setFlashData('msg', 'Không thể xóa vì còn dữ liệu liên quan');
+        if (!empty($checkTenants)) {
+            // Xóa liên kết tenant trước khi xóa hợp đồng
+            $deleteTenants = delete('contract_tenant', "contract_id_1 IN($extract_id)");
+            if (!$deleteTenants) {
+                setFlashData('msg', 'Không thể xóa liên kết tenant!');
                 setFlashData('msg_type', 'err');
-                redirect('?module=contract');
-                exit(); // Dừng việc thực hiện thêm
-            } else {
-                // Thực hiện xóa các hợp đồng đã chọn từ cơ sở dữ liệu 
-                $checkDelete = delete('contract', "id IN($extract_id)");
+                redirect('?module=contract'); // Chuyển hướng đến trang hợp đồng
+                exit;
+            }
+        }
 
-                if ($checkDelete) {
-                    setFlashData('msg', 'Xóa hợp đồng thành công');
+        // Xóa dịch vụ liên kết với hợp đồng
+        $deleteServices = delete('contract_services', "contract_id IN($extract_id)");
+
+        if ($deleteServices) {
+            // Xóa hợp đồng
+            $deleteContracts = delete('contract', "id IN($extract_id)");
+
+            if ($deleteContracts) {
+                // Xóa phòng liên kết với hợp đồng
+                $deleteRooms = delete('room', "id IN(SELECT room_id FROM contract WHERE id IN($extract_id))");
+
+                if ($deleteRooms) {
+                    setFlashData('msg', 'Xóa hợp đồng thành công!');
                     setFlashData('msg_type', 'suc');
                 } else {
-                    setFlashData('msg', 'Có lỗi xảy ra khi xóa hợp đồng');
+                    setFlashData('msg', 'Không thể xóa phòng liên kết với hợp đồng!');
                     setFlashData('msg_type', 'err');
                 }
+            } else {
+                setFlashData('msg', 'Không thể xóa hợp đồng!');
+                setFlashData('msg_type', 'err');
             }
-        } catch (PDOException $e) {
-            setFlashData('msg', 'Đã xảy ra lỗi: ' . $e->getMessage());
-            setFlashData('msg_type', 'err');
         }
     }
-    redirect('?module=contract'); // Chuyển hướng về trang danh sách
+    redirect('?module=contract'); // Chuyển hướng đến trang hợp đồng
 }
 
 $msg = getFlashData('msg');
@@ -301,7 +299,7 @@ layout('navbar', 'admin', $data);
                 </div>
 
                 <div class="col">
-                    <button style="height: 50px; width: 50px" type="submit" class="btn "> <i class="fa fa-search"></i></button>
+                    <button style="height: 50px; width: 50px" type="submit" class="btn btn-secondary"> <i class="fa fa-search"></i></button>
                 </div>
             </div>
             <input type="hidden" name="module" value="contract">
@@ -315,7 +313,7 @@ layout('navbar', 'admin', $data);
             <a href="<?php echo getLinkAdmin('contract'); ?>" class="btn btn-secondary"><i class="fa fa-history"></i> Refresh</a>
             <button type="submit" name="deleteMultip" value="Delete" onclick="return confirm('Bạn có chắn chắn muốn xóa không ?')" class="btn btn-secondary"><i class="fa fa-trash"></i> Xóa</button>
             <!-- <a href="<?php echo getLinkAdmin('contract', 'import'); ?>" class="btn btn-secondary"><i class="fa fa-upload"></i> Import</a> -->
-           
+            <a href="<?php echo getLinkAdmin('contract', 'export'); ?>" class="btn btn-secondary"><i class="fa fa-save"></i> Xuất Excel</a>
 
             <table class="table table-bordered mt-3">
                 <thead>
@@ -328,7 +326,7 @@ layout('navbar', 'admin', $data);
                         <th style="width: 3%; text-align: center;">Tên phòng</th>
                         <th style="width: 6%; text-align: center;">Người làm hợp đồng</th>
                         <th>Đang ở</th>
-                        <th style="width: 2%; text-align: center;">Tổng người</th>
+                        <!-- <th style="width: 2%; text-align: center;">Tổng người</th> -->
                         <th>Giá thuê</th>
                         <th style="width: 5%; text-align: center;">Giá tiền cọc</th>
                         <th style="width: 6%; text-align: center;">Trạng thái cọc</th>
@@ -366,8 +364,8 @@ layout('navbar', 'admin', $data);
                                 <td><?php echo $count; ?></td>
                                 <td><b><?php echo $item['tenphong']; ?></b></td>
                                 <td>
-                                    <b><?php echo $item['tenant_name_1']; ?></b><br>
-                                    <b><?php echo $item['tenant_name_2']; ?></b>
+                                    <!--echo n12br tự động xuống dòng mỗi tên -->
+                                    <b><?php echo nl2br($item['tenant_id_1']); ?></b><br>
                                 </td>
                                 <td>
                                     <?php if (!empty($tenants)) {
@@ -380,7 +378,7 @@ layout('navbar', 'admin', $data);
                                         echo '<i>Chưa có ai</i>';
                                     } ?>
                                 </td>
-                                <td><img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/user.svg" alt=""> <?php echo $item['soluongthanhvien'] ?> người</td>
+                                <!-- <td><img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/user.svg" alt=""> <?php echo $item['soluongthanhvien'] ?> người</td> -->
                                 <td><b><?php echo number_format($item['giathue'], 0, ',', '.') ?> đ</b></td>
                                 <td><b><?php echo number_format($item['tiencoc'], 0, ',', '.') ?> đ</b></td>
                                 <td><?php echo $item['tinhtrangcoc'] == 0 ? '<span class="btn-kyhopdong-err">Chưa thu tiền</span>' : '<span class="btn-kyhopdong-suc">Đã thu tiền</span>' ?></td>
@@ -405,14 +403,13 @@ layout('navbar', 'admin', $data);
                                 <td><b><?php echo $item['ghichu']; ?></b></td>
                                 <td class="">
                                     <div class="action">
-                                        <button type="button" class="btn btn-secondary btn-sm"><i class="fa fa-ellipsis-v"></i></button>
+                                        
                                         <div class="box-action">
                                             <!-- Add your actions here -->
                                             
-                                            <form method="POST" action="">
-                                                <button type="submit" name="terminate" class="btn  btn-sm" onclick="return confirm('Bạn có chắc chắn muốn thanh lý hợp đồng này không?')" title="Thanh lý hợp đồng"><i class="fa fa-times"></i></button>
-                                                <input type="hidden" name="contract_id" value="<?php echo $item['id']; ?>">
-                                            </form>
+                                            <a href="<?php echo getLinkAdmin('contract', 'edit', ['id' => $item['id']]); ?>" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>
+                                            <a href="<?php echo getLinkAdmin('contract', 'delete', ['id' => $item['id']]); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
+                                            
                                         </div>
                                     </div>
                                 </td>
