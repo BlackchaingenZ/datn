@@ -1,0 +1,372 @@
+body, .main-footer {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #e4eef5;
+}
+
+
+.main-footer {
+    margin-right: 250px;
+    text-align: center;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+.err {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    gap: 8px;
+    top: 60px;
+    right: 10px;
+    width: auto;
+    height: 70px;
+    padding: 4px 10px;
+    color: #fff;
+    font-size: 14px;
+    background: #dddcdc;
+    z-index: 99999999;
+}
+
+.menu__item {
+    border: 1px solid #ffffff;
+    border-radius: 10px;
+    padding: 10px 5px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #dcdbdb;
+    width: 160px;
+    text-align: center;
+}
+/* danh sách menu*/
+.menu__item-image {
+    width: 55px;
+    height: 65px;
+}
+
+
+.menu__item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+}
+
+.menu__list {
+    padding: 2px 0;
+    display: flex;
+    /* Chia đều khoảng cách giữa các phần tử */
+    flex-wrap: wrap;
+    row-gap: 20px;
+    overflow-x: hidden;
+}
+
+
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: #fff;
+    box-shadow: 0px 20px 60px 10px rgba(237, 237, 246, 0.1);
+    padding: 0 30px;
+    border-bottom: 1px solid #000;
+    z-index: 9999;
+}
+
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo__image {
+    width: 110px;
+    height: 70px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+
+.nav__list {
+    display: flex;
+    align-items: center;
+}
+
+/* right*/
+.nav__item {
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    -webkit-box-align: center;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #eeeded;
+    border-radius: 10px;
+    margin: 10px 5px;
+    font-size: 13px;
+    padding: 12px 10px;
+    
+}
+
+
+.content-header {
+    margin-top: 100px;
+}
+
+.image__contract {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color:#cacaca;
+    border-radius: 50%;
+}
+
+box-content {
+    overflow-y: auto;
+    margin-top: 15px;
+    width: auto;
+    height: 60vh;
+    background: #eeeded;
+    border-radius: 15px;
+    padding: 20px 20px;
+}
+
+.box-content2 {
+    margin-top: 15px;
+    width: auto;
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px 20px;
+}
+
+/* Service */
+
+.box-service {
+    display: flex;
+    gap: 30px;
+}
+
+.service-left {
+    width: 35%;
+}
+
+.collect-left {
+    width: 100%;
+}
+
+.collect-item {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    padding: 20px 20px;
+    border-radius: 12px;
+    width: 30%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Bóng đổ nhẹ */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Hiệu ứng mượt mà */
+}
+
+.service-left_top {
+    display: flex;
+    justify-content: space-between;
+}
+
+.service-btn {
+    background-color: #a4a4a4;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm bóng */
+}
+
+.service-btn:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Bóng lớn hơn khi hover */
+}
+
+
+.service-item {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    border: 1px solid #660909;
+    padding: 10px 10px;
+    border-radius: 12px;  
+    
+}
+
+.image__equipment-img {
+    width: 30px;
+    height: 30px;
+}
+
+
+
+.popup {
+    position: fixed; /* Đảm bảo popup không bị cuộn */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Nền mờ */
+    display: flex; /* Sử dụng flex để căn giữa */
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    z-index: 2000; /* Đặt z-index cao để popup nổi lên trên */
+}
+
+.popup-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 50%; /* Có thể điều chỉnh tùy ý */
+    max-width: 600px; /* Giới hạn chiều rộng tối đa */
+    position: relative;
+    z-index: 1001; /* Đảm bảo nội dung của popup ở phía trên nền mờ */
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1002; /* Đảm bảo nút đóng luôn ở trên cùng */
+}
+
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.4); 
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; 
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+.account_action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.accout-action_foget {
+    margin-bottom: 5px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #3f4254;
+}
+
+
+.action {
+    display: flex;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.box-action {
+    position: absolute;
+    width: 210px;
+    padding: 10px 20px;
+    display: none;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 1px 1px 8px #ccc;
+    top: 100%;
+    right: 0px;
+    z-index: 999;
+}
+
+.action.active .box-action {
+    display: inline-block;
+}
+
+
+.tooltip-icon {
+    font-size: 15px;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    color: blue;
+    margin-left: 5px;
+}
+
+.tooltip-icon .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Vị trí tooltip */
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 10px; /* Thêm thuộc tính giảm cỡ chữ */
+}
+
+.tooltip-icon:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
