@@ -206,7 +206,7 @@ layout('navbar', 'admin', $data);
                             <input type="number" min="0" id="sodienmoi" class="form-control" name="sodienmoi" required oninput="calculateTienDien()">
                         </div>
 
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label for="name">Ảnh <span style="color: red">*</span></label>
                             <div class="row ckfinder-group">
                                 <div class="col-10">
@@ -216,10 +216,10 @@ layout('navbar', 'admin', $data);
                                     <button type="button" class="btn btn-primary btn-sm choose-image"><i class="fa fa-upload"></i></button>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <div class="form-group">
-                            <label for="tiennuoc">Tiền điện (4000đ/1KWh)</label>
+                            <label for="tiennuoc">Tiền điện (4.000đ/1KWh)</label>
                             <input type="text" class="form-control" id="tiendien" name="tiendien">
                         </div>
                     </div>
@@ -237,7 +237,7 @@ layout('navbar', 'admin', $data);
                             <input type="number" min="0" id="sonuocmoi" class="form-control" name="sonuocmoi" required oninput="calculateTienNuoc()">
                         </div>
 
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label for="name">Ảnh <span style="color: red">*</span></label>
                             <div class="row ckfinder-group">
                                 <div class="col-10">
@@ -247,10 +247,10 @@ layout('navbar', 'admin', $data);
                                     <button type="button" class="btn btn-primary btn-sm choose-image"><i class="fa fa-upload"></i></button>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <div class="form-group">
-                            <label for="tiennuoc">Tiền Nước (20000đ/1m3)</label>
+                            <label for="tiennuoc">Tiền Nước (20.000đ/1m3)</label>
                             <input type="text" class="form-control" id="tiennuoc" name="tiennuoc">
                         </div>
                     </div>
@@ -299,7 +299,7 @@ layout('navbar', 'admin', $data);
             <div class="from-group" style="margin-top: 20px">
                 <div class="btn-row">
                     <a style="margin-right: 5px" href="<?php echo getLinkAdmin('bill', 'bills') ?>" class="btn btn-secondary"><i class="fa fa-arrow-circle-left"></i> Quay lại</a>
-                    <button type="submit" class="btn btn-secondary btn-sm"><i class="fa fa-plus"></i> Thêm hóa đơn</button>
+                    <button type="submit" class="btn btn-secondary"><i class="fa fa-plus"></i> Thêm hóa đơn</button>
                 </div>
             </div>
         </form>
