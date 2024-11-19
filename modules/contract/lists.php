@@ -24,86 +24,6 @@ $data = [
 layout('header', 'admin', $data);
 layout('breadcrumb', 'admin', $data);
 
-// Xử lý hành động thanh lý hợp đồng
-if (isset($_POST['terminate'])) {
-    $contractId = $_POST['contract_id'];
-    $contract = getContractById($contractId);
-
-    if ($contract) {
-        // Lấy thông tin khách thuê của hợp đồng (nếu có nhiều khách thuê, cách nhau bằng dấu phẩy)
-        $tenantInfo = getTenantInfoByContractId($contractId); // Lấy danh sách khách thuê
-
-        // Thêm hợp đồng vào bảng lịch sử và lưu thông tin khách thuê
-        addContractToHistory($contract, $tenantInfo);
-
-        // Kiểm tra có khách thuê nào liên kết với hợp đồng qua bảng contract_tenant
-        $checkTenants = get('contract_tenant', "contract_id_1 = $contractId");
-
-        if (!empty($checkTenants)) {
-            // Xóa liên kết tenant trước khi xóa hợp đồng
-            $deleteTenants = delete('contract_tenant', "contract_id_1 = $contractId");
-            if (!$deleteTenants) {
-                setFlashData('msg', 'Không thể xóa liên kết tenant!');
-                setFlashData('msg_type', 'err');
-                redirect('?module=contract');
-                exit;
-            }
-        }
-
-        // Kiểm tra và cập nhật khách thuê để xóa liên kết phòng
-        $roomId = $contract['room_id'];
-        $checkTenantRoomLink = get('tenant', "room_id = $roomId");
-
-        if (!empty($checkTenantRoomLink)) {
-            // Cập nhật `room_id` của khách thuê thành NULL
-            $updateTenantRoomLink = update('tenant', ['room_id' => NULL], "room_id = $roomId");
-            if (!$updateTenantRoomLink) {
-                setFlashData('msg', 'Không thể xóa liên kết phòng của khách thuê!');
-                setFlashData('msg_type', 'err');
-                redirect('?module=contract');
-                exit;
-            }
-        }
-
-        // Xóa dịch vụ liên kết với hợp đồng
-        $deleteServices = delete('contract_services', "contract_id = $contractId");
-
-        if ($deleteServices) {
-            // Xóa khỏi bảng hợp đồng
-            deleteContract($contractId);
-
-            setFlashData('msg', 'Thanh lý hợp đồng thuê trọ thành công');
-            setFlashData('msg_type', 'suc');
-        } else {
-            setFlashData('msg', 'Không thể xóa dịch vụ liên kết với hợp đồng!');
-            setFlashData('msg_type', 'err');
-        }
-    } else {
-        setFlashData('msg', 'Không tìm thấy hợp đồng');
-        setFlashData('msg_type', 'err');
-    }
-
-    redirect('?module=contract');
-}
-
-
-function addContractToHistory($contract, $tenantInfo)
-{
-    // Thêm hợp đồng vào bảng lịch sử
-    $data = [
-        'contract_id' => $contract['id'],
-        'room_id' => $contract['room_id'],
-        'ngaylaphopdong' => $contract['ngaylaphopdong'],
-        'ngayvao' => $contract['ngayvao'],
-        'ngayra' => $contract['ngayra'],
-        'ngaythanhly' => date('Y-m-d'),
-        'khachthue' => $tenantInfo // Lưu chuỗi khách thuê vào trường 'khachthue'
-    ];
-    insert('rental_history', $data);
-}
-
-
-
 function getContractById($id)
 {
     // Lấy hợp đồng từ database
@@ -145,21 +65,51 @@ function getTenantsByRoomId($roomId)
 }
 
 $searchContract = isset($_POST['search_contract']) ? $_POST['search_contract'] : '';
+$tinhtrangcoc = isset($_POST['tinhtrangcoc']) ? $_POST['tinhtrangcoc'] : ''; // Lấy giá trị tìm kiếm theo tình trạng cọc
+$trangthaihopdong = isset($_POST['trangthaihopdong']) ? $_POST['trangthaihopdong'] : null; // Đặt giá trị mặc định là null
+
 
 // Xử lý truy vấn SQL với điều kiện tìm kiếm
-if (!empty($searchContract)) {
+if (!empty($searchContract) || !empty($tinhtrangcoc) || $trangthaihopdong != null) {
+    $queryCondition = [];
+
+    // Thêm điều kiện tìm kiếm theo hợp đồng
+    if (!empty($searchContract)) {
+        $queryCondition[] = "(room.tenphong LIKE '%$searchContract%' OR tenant.tenkhach LIKE '%$searchContract%' OR tenant.cmnd LIKE '%$searchContract%')";
+    }
+
+    // Thêm điều kiện trạng thái cọc
+    if (!empty($tinhtrangcoc)) {
+        if ($tinhtrangcoc == '1') {
+            $queryCondition[] = "contract.tinhtrangcoc = '1'";
+        } elseif ($tinhtrangcoc == '2') {
+            $queryCondition[] = "contract.tinhtrangcoc = '2'";
+        }
+    }
+    if ($trangthaihopdong != null) {
+        if ($trangthaihopdong == '1') {
+            $queryCondition[] = "contract.trangthaihopdong = '1'";
+        } elseif ($trangthaihopdong == '0') {
+            $queryCondition[] = "contract.trangthaihopdong = '0'";
+        }
+    }
+
+    // Chỉ thêm WHERE nếu có điều kiện
+    $whereClause = !empty($queryCondition) ? "WHERE " . implode(' AND ', $queryCondition) : "";
+
+    // Câu truy vấn SQL với các điều kiện
     $listAllcontract = getRaw("
         SELECT *, 
             contract.id, 
             tenphong, 
             cost.giathue,
             sotiencoc, 
-            soluongthanhvien, 
             contract.ngayvao AS ngayvaoo, 
             contract.ngayra AS thoihanhopdong, 
             contract.ghichu,
+            contract.trangthaihopdong,
             tinhtrangcoc, 
-GROUP_CONCAT(DISTINCT CONCAT(tenant.tenkhach, ' (ID: ', tenant.id, ')') ORDER BY tenant.tenkhach ASC SEPARATOR '\n') AS tenant_id_1,  
+            GROUP_CONCAT(DISTINCT CONCAT(tenant.tenkhach, ' (ID: ', tenant.id, ')') ORDER BY tenant.tenkhach DESC SEPARATOR '\n') AS tenant_id_1,  
             GROUP_CONCAT(DISTINCT services.tendichvu ORDER BY services.tendichvu ASC SEPARATOR ', ') AS tendichvu 
         FROM contract 
         INNER JOIN room ON contract.room_id = room.id
@@ -168,10 +118,10 @@ GROUP_CONCAT(DISTINCT CONCAT(tenant.tenkhach, ' (ID: ', tenant.id, ')') ORDER BY
         INNER JOIN cost_room ON room.id = cost_room.room_id 
         INNER JOIN cost ON cost_room.cost_id = cost.id
         LEFT JOIN contract_services ON contract.id = contract_services.contract_id 
-        LEFT JOIN services ON contract_services.services_id = services.id 
-        WHERE room.tenphong LIKE '%$searchContract%' OR tenant.tenkhach LIKE '%$searchContract%' OR tenant.cmnd LIKE '%$searchContract%'
+        LEFT JOIN services ON contract_services.services_id = services.id
+        $whereClause
         GROUP BY contract.id
-        ORDER BY contract.id DESC 
+        ORDER BY contract.id DESC
     ");
 } else {
     // Nếu không có tìm kiếm, lấy tất cả hợp đồng
@@ -181,12 +131,12 @@ GROUP_CONCAT(DISTINCT CONCAT(tenant.tenkhach, ' (ID: ', tenant.id, ')') ORDER BY
             tenphong, 
             cost.giathue,
             sotiencoc, 
-            soluongthanhvien, 
             contract.ngayvao AS ngayvaoo, 
             contract.ngayra AS thoihanhopdong, 
             contract.ghichu,
+            contract.trangthaihopdong,
             tinhtrangcoc, 
-GROUP_CONCAT(DISTINCT CONCAT(tenant.tenkhach, ' (ID: ', tenant.id, ')') ORDER BY tenant.tenkhach ASC SEPARATOR '\n') AS tenant_id_1, 
+GROUP_CONCAT(DISTINCT CONCAT(tenant.tenkhach, ' (ID: ', tenant.id, ')') ORDER BY tenant.tenkhach DESC SEPARATOR '\n') AS tenant_id_1, 
             GROUP_CONCAT(DISTINCT services.tendichvu ORDER BY services.tendichvu ASC SEPARATOR ', ') AS tendichvu 
         FROM contract 
         INNER JOIN room ON contract.room_id = room.id
@@ -225,6 +175,21 @@ if (isset($_POST['deleteMultip'])) {
             }
         }
 
+        // Kiểm tra xem hợp đồng có liên kết với receipt không
+        $checkReceipts = get('receipt', "contract_id IN($extract_id)");
+
+        if (!empty($checkReceipts)) {
+            // Xóa bản ghi liên kết với receipt
+            $deleteReceipts = delete('receipt', "contract_id IN($extract_id)");
+
+            if (!$deleteReceipts) {
+                setFlashData('msg', 'Không thể xóa liên kết với receipt!');
+                setFlashData('msg_type', 'err');
+                redirect('?module=contract'); // Chuyển hướng đến trang hợp đồng
+                exit;
+            }
+        }
+
         // Xóa dịch vụ liên kết với hợp đồng
         $deleteServices = delete('contract_services', "contract_id IN($extract_id)");
 
@@ -251,6 +216,7 @@ if (isset($_POST['deleteMultip'])) {
     }
     redirect('?module=contract'); // Chuyển hướng đến trang hợp đồng
 }
+
 $msg = getFlashData('msg');
 $msgType = getFlashData('msg_type');
 $errors = getFlashData('errors');
@@ -283,9 +249,31 @@ layout('navbar', 'admin', $data);
         <?php } ?>
         <form action="" method="POST" class="mt-3">
             <div class="row">
-                <div class="col-4"></div> <!-- Cột trống bên trái để canh giữa -->
+                <div class = "col-2">
 
-                <div class="col-4"> <!-- Cột chứa ô tìm kiếm -->
+                </div>
+                <div class="col-2">
+                    <div class="dropdown">
+                        <select name="trangthaihopdong" class="form-control" style="height: 50px; padding-right: 30px;">
+                            <option value="">Chọn tình trạng thanh lý</option>
+                            <option value="1" <?php echo (isset($_POST['trangthaihopdong']) && $_POST['trangthaihopdong'] == '1') ? 'selected' : ''; ?>>Chưa thanh lý</option>
+                            <option value="0" <?php echo (isset($_POST['trangthaihopdong']) && $_POST['trangthaihopdong'] == '0') ? 'selected' : ''; ?>>Đã thanh lý</option>
+                        </select>
+                        <span class="fa fa-chevron-down" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></span>
+                    </div>
+                </div>
+
+                <div class="col-2"> <!-- Cột chứa box chọn tìm kiếm theo tình trạng cọc -->
+                    <div class="dropdown">
+                        <select name="tinhtrangcoc" class="form-control" style="height: 50px;">
+                            <option value="">Chọn trạng thái cọc</option>
+                            <option value="2" <?php echo (isset($_POST['tinhtrangcoc']) && $_POST['tinhtrangcoc'] == '2') ? 'selected' : ''; ?>>Chưa thu</option>
+                            <option value="1" <?php echo (isset($_POST['tinhtrangcoc']) && $_POST['tinhtrangcoc'] == '1') ? 'selected' : ''; ?>>Đã thu</option>
+                        </select>
+                        <span class="fa fa-chevron-down" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></span>
+                    </div>
+                </div>
+                <div class="col-4"> <!-- Cột chứa ô tìm kiếm tên phòng, tên khách hoặc cmnd -->
                     <input style="height: 50px" type="search" name="search_contract" class="form-control" placeholder="Nhập tên phòng, tên khách hoặc cmnd để tìm hợp đồng" value="<?php echo isset($_POST['search_contract']) ? $_POST['search_contract'] : ''; ?>">
                 </div>
 
@@ -300,8 +288,6 @@ layout('navbar', 'admin', $data);
             <a href="<?php echo getLinkAdmin('contract', 'add') ?>" class="btn btn-secondary" style="color: #fff"><i class="fa fa-plus"></i> Thêm mới</a>
             <a href="<?php echo getLinkAdmin('contract'); ?>" class="btn btn-secondary"><i class="fa fa-history"></i> Refresh</a>
             <button type="submit" name="deleteMultip" value="Delete" onclick="return confirm('Bạn có chắn chắn muốn xóa không ?')" class="btn btn-secondary"><i class="fa fa-trash"></i> Xóa</button>
-            <a href="<?php echo getLinkAdmin('contract', 'renatal_history') ?>" class="btn btn-secondary" style="color: #fff"><i class="fa-regular fa-file"></i> Lịch sử thanh lý</a>
-            <!-- <a href="<?php echo getLinkAdmin('contract', 'export'); ?>" class="btn btn-secondary"><i class="fa fa-save"></i> Xuất Excel</a> -->
 
             <table class="table table-bordered mt-4">
                 <thead>
@@ -310,13 +296,13 @@ layout('navbar', 'admin', $data);
                             <input type="checkbox" id="check-all" onclick="toggle(this)">
                         </th>
                         <!-- <th></th> -->
-                        <th style="text-align: center;" width="2%">STT</th>
+                        <th style="text-align: center;" width="1%">STT</th>
                         <th style="width: 3%; text-align: center;">Tên phòng</th>
-                        <th style="width: 9%; text-align: center;">Người làm hợp đồng</th>
-                        <th style="width: 8%;text-align: center;">Đang ở</th>
+                        <th style="width: 7%; text-align: center;">Người làm hợp đồng</th>
+                        <!-- <th style="width: 8%;text-align: center;">Người ở</th> -->
                         <!-- <th style="width: 2%; text-align: center;">Tổng người</th> -->
                         <th style="text-align: center;">Giá thuê</th>
-                        <th style="width: 6%; text-align: center;">Giá tiền cọc</th>
+                        <th style="width: 5%; text-align: center;">Giá tiền cọc</th>
                         <th style="width: 6%; text-align: center;">Trạng thái cọc</th>
                         <th style="width: 4%; text-align: center;">Chu kỳ thu </th>
                         <th style="text-align: center;">Ngày lập</th>
@@ -325,9 +311,10 @@ layout('navbar', 'admin', $data);
                         <th style="width: 7%;text-align: center;">Tình trạng</th>
                         <th style="text-align: center;">Dịch vụ</th>
                         <th style="text-align: center;">Ghi chú</th>
-                        <th style="text-align: center;">Điều khoản 1</th>
+                        <th style="text-align: center;">Thanh lý</th>
+                        <!-- <th style="text-align: center;">Điều khoản 1</th>
                         <th style="text-align: center;">Điều khoản 2</th>
-                        <th style="text-align: center;">Điều khoản 3</th>
+                        <th style="text-align: center;">Điều khoản 3</th> -->
                         <th style="width: 3%; text-align: center;">Thao tác</th>
                     </tr>
                 </thead>
@@ -367,7 +354,7 @@ layout('navbar', 'admin', $data);
                                     ?>
 
                                 </td>
-                                <td style="text-align: center;">
+                                <!-- <td style="text-align: center;">
                                     <?php if (!empty($tenants)) {
                                         foreach ($tenants as $tenant) {
                                     ?>
@@ -375,13 +362,13 @@ layout('navbar', 'admin', $data);
                                     <?php
                                         }
                                     } else {
-                                        echo '<i>Chưa có ai</i>';
+                                        echo '<i>Trống</i>';
                                     } ?>
-                                </td>
+                                </td> -->
                                 <!-- <td><img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/user.svg" alt=""> <?php echo $item['soluongthanhvien'] ?> người</td> -->
                                 <td style="text-align: center;"><b><?php echo number_format($item['giathue'], 0, ',', '.') ?> đ</b></td>
                                 <td style="text-align: center;"><b><?php echo number_format($item['sotiencoc'], 0, ',', '.') ?> đ</b></td>
-                                <td style="text-align: center;"><?php echo $item['tinhtrangcoc'] == 0 ? '<span class="btn-kyhopdong-err">Chưa thu tiền</span>' : '<span class="btn-kyhopdong-suc">Đã thu tiền</span>' ?></td>
+                                <td style="text-align: center;"><?php echo $item['tinhtrangcoc'] == 2 ? '<span class="btn-kyhopdong-err">Chưa thu</span>' : '<span class="btn-kyhopdong-suc">Đã thu</span>' ?></td>
                                 <td style="text-align: center;"><?php echo $item['chuky'] ?> tháng</td>
                                 <td style="text-align: center;"><?php echo $item['ngaylaphopdong'] == '0000-00-00' ? 'Không xác định' : getDateFormat($item['ngaylaphopdong'], 'd-m-Y'); ?></td>
                                 <td style="text-align: center;"><?php echo $item['ngayvaoo'] == '0000-00-00' ? 'Không xác định' : getDateFormat($item['ngayvaoo'], 'd-m-Y'); ?></td>
@@ -399,7 +386,15 @@ layout('navbar', 'admin', $data);
                                     }
                                     ?>
                                 </td>
-                                <td><b><?php echo $item['tendichvu']; ?></b></td>
+                                <td style="text-align: center;">
+                                    <?php
+                                    if (empty($item['tendichvu'])) {
+                                        echo "Trống";
+                                    } else {
+                                        echo "" . $item['tendichvu'];
+                                    }
+                                    ?>
+                                </td>
                                 <td style="text-align: center;">
                                     <!-- Thông tin -->
                                     <span class="tooltip-icon">
@@ -407,42 +402,39 @@ layout('navbar', 'admin', $data);
                                         <span class="tooltiptext"><?php echo $item['ghichu']; ?></span>
                                     </span>
                                 </td>
-                                <td style=" text-align: center;">
-                                    <!-- Thông tin -->
+                                <td style="text-align: center;"><?php echo $item['trangthaihopdong'] == 0 ? '<span class="btn-trangthaihopdong-war">Đã thanh lý</span>' : '<span class="btn-trangthaihopdong-second">Chưa thanh lý</span>' ?></td>
+                                <!-- <td style=" text-align: center;">
+                                  
                                     <span class="tooltip-icon">
                                         <i class="fa-solid fa-eye"></i>
                                         <span class="tooltiptext"><?php echo $item['dieukhoan1']; ?></span>
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <!-- Thông tin -->
+                                    
                                     <span class="tooltip-icon">
                                         <i class="fa-solid fa-eye"></i>
                                         <span class="tooltiptext"><?php echo $item['dieukhoan2']; ?></span>
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
-                                    <!-- Thông tin -->
+                                    
                                     <span class="tooltip-icon">
                                         <i class="fa-solid fa-eye"></i>
                                         <span class="tooltiptext"><?php echo $item['dieukhoan3']; ?></span>
                                     </span>
-                                </td>
+                                </td> -->
                                 <td class="" style="text-align: center;">
                                     <div class="action">
                                         <button type="button" class="btn btn-secondary btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                         <div class="box-action">
                                             <!-- Add your actions here -->
-                                            <a title="Xem hợp đồng" href="<?php echo getLinkAdmin('contract', 'view', ['id' => $item['id']]); ?>" class="btn btn-primary"><i class="nav-icon fas fa-solid fa-eye"></i></a>
-                                            <a title="In hợp đồng" target="_blank" href="<?php echo getLinkAdmin('contract', 'print', ['id' => $item['id']]) ?>" class="btn btn-primary"><i class="fa fa-print"></i></a>
-                                            <a href="<?php echo getLinkAdmin('contract', 'edit', ['id' => $item['id']]); ?>" class="btn btn-primary"><i class="fa fa-edit"></i></a>
-                                            <a href="<?php echo getLinkAdmin('contract', 'delete', ['id' => $item['id']]); ?>" class="btn btn-primary" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
-                                            <form method="POST" action="">
-                                                <button type="submit" name="terminate" class="btn btn-primary" onclick="return confirm('Bạn có chắc chắn muốn thanh lý hợp đồng này không?')" title="Thanh lý hợp đồng"><i class="fa fa-times"></i></button>
-                                                <input type="hidden" name="contract_id" value="<?php echo $item['id']; ?>">
-                                            </form>
+                                            <a title="Xem hợp đồng" href="<?php echo getLinkAdmin('contract', 'view', ['id' => $item['id']]); ?>" class="btn btn-success btn-sm"><i class="nav-icon fas fa-solid fa-eye"></i></a>
+                                            <a title="In hợp đồng" target="_blank" href="<?php echo getLinkAdmin('contract', 'print', ['id' => $item['id']]) ?>" class="btn btn-dark btn-sm"><i class="fa fa-print"></i></a>
+                                            <a href="<?php echo getLinkAdmin('contract', 'edit', ['id' => $item['id']]); ?>" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>
+                                            <a href="<?php echo getLinkAdmin('contract', 'delete', ['id' => $item['id']]); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i></a>
+                                            <a href="<?php echo getLinkAdmin('contract', 'liquidation', ['id' => $item['id']]); ?>" class="btn btn-warning btn-sm"><i class="fa fa-times"></i></a>
                                         </div>
-                                    </div>
                                 </td>
 
                             <?php endforeach;
@@ -455,6 +447,7 @@ layout('navbar', 'admin', $data);
                         <?php endif; ?>
                 </tbody>
             </table>
+        </form>
     </div>
 </div>
 

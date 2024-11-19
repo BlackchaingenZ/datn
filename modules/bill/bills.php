@@ -94,7 +94,7 @@ if (!empty(getBody()['page'])) {
     $page = 1;
 }
 $offset = ($page - 1) * $perPage;
-$listAllBill = getRaw("SELECT *, bill.id, bill.chuky, room.tenphong, tenant.zalo FROM bill 
+$listAllBill = getRaw("SELECT *, bill.id, bill.chuky, room.tenphong FROM bill 
 INNER JOIN room ON bill.room_id = room.id LEFT JOIN tenant ON bill.tenant_id = tenant.id $filter  ORDER BY bill.create_at DESC  LIMIT $offset, $perPage");
 
 // Xử lý query string tìm kiếm với phân trang
@@ -128,7 +128,8 @@ layout('navbar', 'admin', $data);
         <!-- Tìm kiếm , Lọc dưz liệu -->
         <form action="" method="get">
             <div class="row">
-                <div class="col-3">
+                <div class="col-2"></div>
+                <div class="col-2">
                     <div class="form-group">
                         <select name="status" id="" class="form-select">
                             <option value="">Chọn trạng thái</option>
@@ -139,10 +140,13 @@ layout('navbar', 'admin', $data);
                     </div>
                 </div>
 
-                <div class="col-4">
+                <div class="col-3">
                     <input style="height: 50px" type="search" name="keyword" class="form-control" placeholder="Nhập mã hóa đơn cần tìm" value="<?php echo (!empty($keyword)) ? $keyword : false; ?>">
                 </div>
 
+                <div class="col-2">
+                    <input style="height: 50px" type="month" class="form-control" name="datebill" id="" value="<?php echo (!empty($datebill)) ? $datebill : $currentMonthYear; ?>">
+                </div>
 
                 <div class="col">
                     <button style="height: 50px; width: 50px" type="submit" class="btn btn-secondary"> <i class="fa fa-search"></i></button>
@@ -160,13 +164,13 @@ layout('navbar', 'admin', $data);
             <a style="margin-right: 5px" href="<?php echo getLinkAdmin('bill', '') ?>" class="btn btn-secondary"><i class="fa fa-arrow-circle-left"></i> Quay lại</a>
             <a href="<?php echo getLinkAdmin('bill', 'add') ?>" class="btn btn-secondary" style="color: #fff"><i class="fa fa-plus"></i> Thêm mới </a>
             <a href="<?php echo getLinkAdmin('bill', 'bills'); ?>" class="btn btn-secondary"><i class="fa fa-history"></i> Refresh</a>
-            
-            <!-- <a href="<?php echo getLinkAdmin('bill', 'export'); ?>" class="btn btn-secondary"><i class="fa fa-save"></i> Xuất Excel</a> -->
+            <a href="<?php echo getLinkAdmin('bill', 'export'); ?>" class="btn btn-secondary"><i class="fa fa-save"></i> Xuất Excel</a>
 
             <table class="table table-bordered mt-3" style="overflow-x: auto;">
                 <thead>
                     <tr>
                         <th width="3%" rowspan="2"> STT</th>
+                        <th rowspan="2">Mã hoá đơn</th>
                         <th rowspan="2">Tên phòng</th>
                         <th colspan="3">Tiền phòng</th>
                         <th colspan="3">Tiền điện</th>
@@ -205,11 +209,21 @@ layout('navbar', 'admin', $data);
                             $count++;
 
                     ?>
-                            <tr>
+                            <tr >
                                 <td style="text-align: center;"><?php echo $count; ?></td>
+                                <td style="text-align: center; color: red"><?php echo $item['mahoadon']; ?></td>
                                 <td style="text-align: center;"><?php echo $item['tenphong']; ?></td>
                                 <td style="text-align: center;"><?php echo $item['chuky']; ?></td>
-                                <td style="text-align: center;"><?php echo $item['songayle']; ?></td>
+                                
+                                <td style="text-align: center;">
+                                    <?php
+                                    if (empty($item['songayle'])) {
+                                        echo "0";
+                                    } else {
+                                        echo "" . $item['songayle'];
+                                    }
+                                    ?>
+                                </td>
                                 <td style="text-align: center;"><b><?php echo number_format($item['tienphong'], 0, ',', '.') ?> đ</b></td>
                                 <td style="text-align: center;"><?php echo $item['sodiencu']; ?></td>
                                 <td style="text-align: center;">
@@ -234,13 +248,13 @@ layout('navbar', 'admin', $data);
                                     <b style="color: #15a05c"><?php echo number_format($item['sotiendatra'], 0, ',', '.') ?> đ</b>
                                 </td>
                                 <td style="text-align: center; color: #db2828"><b><?php echo number_format($item['sotienconthieu'], 0, ',', '.') ?> đ</b></td>
-                                <td><?php echo getDateFormat($item['ngayvao'], 'm-d-Y') ?></td>
+                                <td><?php echo getDateFormat($item['ngayvao'], 'd-m-Y') ?></td>
                                 <td style="text-align: center;">
 
                                     <?php
                                     if ($item['trangthaihoadon'] == 1) {
                                         echo '<span class="btn-kyhopdong-suc">Đã thu</span>';
-                                    } elseif ($item['trangthaihoadon'] == 0) {
+                                    } elseif ($item['trangthaihoadon'] == 2) {
                                         echo '<span class="btn-kyhopdong-warning">Chưa thu</span>';
                                     } else {
                                         echo '<span class="btn-kyhopdong-err">Đang nợ</span>';
@@ -253,16 +267,9 @@ layout('navbar', 'admin', $data);
                                         <button type="button" class="btn btn-secondary btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                         <div class="box-action">
                                             <!-- Add your actions here -->
-                                            <a target="_blank" href="<?php echo $item['zalo'] ?>"><img style="width: 30px; height: 30px" src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/zalo.jpg" class="small"></a>
                                             <a title="Xem hoá đơn" href="<?php echo getLinkAdmin('bill', 'view', ['id' => $item['id']]); ?>" class="btn btn-primary btn-sm small"><i class="nav-icon fas fa-solid fa-eye"></i> </a>
                                             <a title="In hoá đơn" target="_blank" href="<?php echo getLinkAdmin('bill', 'print', ['id' => $item['id']]) ?>" class="btn btn-secondary btn-sm small"><i class="fa fa-print"></i> </a>
-                                            <?php
-                                            if ($item['trangthaihoadon'] != 1) {
-                                            ?>
                                                 <a href="<?php echo getLinkAdmin('bill', 'edit', ['id' => $item['id']]); ?>" class="btn btn-warning btn-sm small"><i class="fa fa-edit"></i> </a>
-                                            <?php
-                                            }
-                                            ?>
                                             <a href="<?php echo getLinkAdmin('bill', 'delete', ['id' => $item['id']]); ?>" class="btn btn-danger btn-sm small" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i> </a>
                                         </div>
                                     </div>

@@ -49,7 +49,7 @@ if (!empty(getBody()['page'])) {
 $offset = ($page - 1) * $perPage;
 
 $listAllReceipt = getRaw("SELECT *, tenphong, tendanhmuc, receipt.id FROM receipt INNER JOIN room ON room.id = receipt.room_id 
-INNER JOIN category_collect ON category_collect.id = receipt.danhmucthu_id $filter LIMIT $offset, $perPage");
+INNER JOIN category_collect ON category_collect.id = receipt.danhmucthu_id $filter ORDER BY receipt.id DESC  LIMIT $offset, $perPage");
 
 // Xử lý query string tìm kiếm với phân trang
 $queryString = null;
@@ -125,13 +125,11 @@ layout('navbar', 'admin', $data);
             <a style="margin-right: 5px" href="<?php echo getLinkAdmin('bill', '') ?>" class="btn btn-secondary"><i class="fa fa-arrow-circle-left"></i> Quay lại</a>
             <a href="<?php echo getLinkAdmin('receipt', 'add') ?>" class="btn btn-secondary" style="color: #fff"><i class="fa fa-plus"></i> Thêm</a>
             <a href="<?php echo getLinkAdmin('receipt'); ?>" class="btn btn-secondary"><i class="fa fa-history"></i> Refresh</a>
-            <!-- <a href="<?php echo getLinkAdmin('receipt', 'export'); ?>" class="btn btn-secondary"><i class="fa fa-save"></i> Xuất Excel</a> -->
-            <!-- <a style="margin-left: 20px " href="<?php echo getLinkAdmin('sumary') ?>" class="btn btn-secondary"><i class="fa fa-forward"></i></a> -->
+            <a href="<?php echo getLinkAdmin('receipt', 'export'); ?>" class="btn btn-secondary"><i class="fa fa-save"></i> Xuất Excel</a>
             <table class="table table-bordered mt-3">
                 <thead>
                     <tr>
-                        <th></th>
-                        <th wìdth="5%">STT</th>
+                        <th>STT</th>
                         <th>Khoản</th>
                         <th>Loại</th>
                         <th>Tên phòng</th>
@@ -150,22 +148,16 @@ layout('navbar', 'admin', $data);
                         foreach ($listAllReceipt as $item):
                             $count++;
                     ?>
-
                             <tr>
-                                <td>
-                                    <div class="image__bill">
-                                        <img src="<?php echo _WEB_HOST_ADMIN_TEMPLATE; ?>/assets/img/bill-icon.svg" class="image__bill-img" alt="">
-                                    </div>
-                                </td>
-                                <td><?php echo $count; ?></td>
-                                <td style="color: green"><b><?php echo $item['tendanhmuc']; ?></b></td>
-                                <td><span style="background: #15A05C; color: #fff; padding: 2px 4px; border-radius: 5px; font-size: 12px">Khoản thu</span></td>
-                                <td><?php echo $item['tenphong'] ?></td>
-                                <td><b><?php echo number_format($item['sotien'], 0, ',', '.') ?> đ</b></td>
-                                <td><?php echo $item['ghichu'] ?></td>
-                                <td><?php echo getDateFormat($item['ngaythu'], 'd-m-Y'); ?></td>
+                                <td style="text-align: center"><?php echo $count; ?></td>
+                                <td style="color: dark; text-align: center;"><b><?php echo $item['tendanhmuc']; ?></b></td>
+                                <td style="text-align: center"><span style="background: #15A05C; color: #fff; padding: 2px 4px; border-radius: 5px; font-size: 12px">Khoản thu</span></td>
+                                <td style="text-align: center"><?php echo $item['tenphong'] ?></td>
+                                <td style="text-align: center"><b><?php echo number_format($item['sotien'], 0, ',', '.') ?> đ</b></td>
+                                <td style="text-align: center"><?php echo $item['ghichu'] ?></td>
+                                <td style="text-align: center"><?php echo getDateFormat($item['ngaythu'], 'd-m-Y'); ?></td>
                                 <td style="text-align: center"><?php echo $item['phuongthuc'] == 0 ? '<span class="btn-kyhopdong-second">Tiền mặt</span>' : '<span class="btn-kyhopdong-second">Chuyển khoản</span>' ?></td>
-                                <td class="">
+                                <td class="" style="text-align: center">
                                     <!-- <a title="In hợp đồng" target="_blank" href="<?php echo getLinkAdmin('receipt', 'print', ['id' => $item['id']]) ?>" class="btn btn-secondary btn-sm"><i class="fa fa-print"></i> </a> -->
                                     <a href="<?php echo getLinkAdmin('receipt', 'edit', ['id' => $item['id']]); ?>" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i> </a>
                                     <a href="<?php echo getLinkAdmin('receipt', 'delete', ['id' => $item['id']]); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa không ?')"><i class="fa fa-trash"></i> </a>
