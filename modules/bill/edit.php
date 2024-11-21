@@ -84,9 +84,11 @@ if (isPost()) {
             'trangthaihoadon' => $body['trangthaihoadon'],
         ];
 
+
+        $id = (int)$_GET['id'];  // Đảm bảo id là số nguyên
         $condition = "id=$id";
         $updateStatus = update('bill', $dataUpdate, $condition);
-
+        
         if ($updateStatus) {
             setFlashData('msg', 'Cập nhật thông tin hóa đơn thành công');
             setFlashData('msg_type', 'suc');
@@ -268,16 +270,15 @@ layout('navbar', 'admin', $data);
 
                 <div class="col-3">
                     <div class="form-group">
-                        <label for="">Tình trạng thu tiền</label>
+                        <label for="">Tình trạng thu tiền<span style="color: red">*</label>
                         <select name="trangthaihoadon" class="form-select">
-                            <!-- <option value="">Chọn trạng thái</option>                                -->
-                            <option value="0" <?php if ($billDetail['trangthaihoadon'] == 0) echo 'selected' ?>>Chưa thanh toán</option>
-                            <option value="1" <?php if ($billDetail['trangthaihoadon'] == 1) echo 'selected' ?>>Đã thanh toán</option>
-                            <option value="2" <?php if ($billDetail['trangthaihoadon'] == 2) echo 'selected' ?>>Đang nợ tiền</option>
+                            <option value="" disabled selected>Chọn trạng thái</option>
+                            <option value="2">Chưa thu</option>
+                            <option value="1">Đã thu</option>
+                            <option value="3">Còn nợ</option>
                         </select>
                     </div>
                 </div>
-
             </div>
 
             <div class="from-group">
