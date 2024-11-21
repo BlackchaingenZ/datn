@@ -116,7 +116,7 @@ $listRoomAndCost = getRoomAndCostList();
                                 <td><?php echo $item['room_id']; ?></td>
                                 <td><?php echo $item['tenphong']; ?></td>
                                 <td><b><?php echo $item['tengia']; ?></b></td>
-                                <td><?php echo $item['thoigianapdung']; ?></td>
+                                <td><?php echo getDateFormat($item['thoigianapdung'],'d-m-Y'); ?></td>
                                 <td class="" style="width: 100px; height: 50px;">
                                 <a href="<?php echo getLinkAdmin('cost', 'editapplycost', ['applycost' => $item['room_id']]); ?>" class="btn btn-primary btn-sm"><i class="fa fa-edit"></i></a>
 
